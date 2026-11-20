@@ -28,7 +28,13 @@ Só na versão oficial (`node scripts/gerar.mjs` sem `--previa`): GA4 `GT-NC6TWL
 ## Scripts
 `gerar.mjs [--previa]` · `importar.mjs` (reimporta do WP) · `fotos.mjs` (celular/PC, NODE_PATH com playwright) · `publicar-previa.mjs` · `criar-planilha.mjs` / `reestruturar-planilha.mjs` (já rodados) · `teste-celula.mjs` / `teste-noticia.mjs` (testes) · `zapi-grupos.mjs` (só leitura).
 
-## Pendente
-- Hostinger (acesso do Wallace): publicar `site/` por FTP no workflow, trocar domínio, gerar sem `--previa`.
-- Virar `MODO_TESTE` do formulário para "0" após validação do Rafa.
-- Compartilhar a pasta "Agenda do site A6" com a Bianca (precisa do e-mail e do OK do Rafa).
+## Feito em 20/11/2026
+- Formulário OFICIAL (`MODO_TESTE = "0"`, teste validado pelo Rafa).
+- Pasta "Agenda do site A6" compartilhada com bianca.gimenes@a6producoes.com.br (editora).
+
+## Pendente — Hostinger (acesso do Wallace, segunda 23/11)
+1. Backup completo do WordPress atual (arquivos + banco) ANTES de tudo.
+2. Segredos `HOSTINGER_FTP_HOST/USER/PASS` (+ variável `HOSTINGER_DIR` se não for public_html).
+3. Tirar o WordPress do public_html (o espelho FTP não apaga arquivos antigos; `index.php` do WP venceria o `index.html`).
+4. `gh variable set HOSTINGER_ATIVO -R orafamartinelli/a6-site --body 1` e rodar `gh workflow run atualizar.yml -f motivo=oficial`.
+5. Conferir páginas com barra final, 301 do `.htaccess`, GA4/pixel disparando, Search Console (reenviar sitemap).

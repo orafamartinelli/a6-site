@@ -55,6 +55,20 @@ jobs:
         if: env.MUDOU == '1'
         working-directory: site
         run: npx --yes wrangler@4 pages deploy . --project-name=a6-site-previa --branch=main --commit-dirty=true
+      # ── HOSTINGER (site oficial) — desligado até existir a variável HOSTINGER_ATIVO=1 e os segredos FTP ──
+      # Gera a versão oficial (indexável, com medição) e espelha site/ no public_html por FTP. Não grava no repositório.
+      - name: Publicar na Hostinger (oficial)
+        if: vars.HOSTINGER_ATIVO == '1' && (env.MUDOU == '1' || inputs.motivo == 'oficial' || inputs.motivo == 'diario')
+        env:
+          FTP_HOST: ${{ secrets.HOSTINGER_FTP_HOST }}
+          FTP_USER: ${{ secrets.HOSTINGER_FTP_USER }}
+          FTP_PASS: ${{ secrets.HOSTINGER_FTP_PASS }}
+          FTP_DIR: ${{ vars.HOSTINGER_DIR || 'public_html' }}
+        run: |
+          node scripts/gerar.mjs
+          sudo apt-get install -y -qq lftp > /dev/null
+          lftp -u "$FTP_USER","$FTP_PASS" "$FTP_HOST" -e "set ftp:ssl-allow yes; set ssl:verify-certificate no; mirror -R --only-newer --parallel=4 --exclude-glob _headers --exclude-glob _redirects site/ $FTP_DIR/; bye"
+          curl -sf -o /dev/null https://a6producoes.com.br/ && echo "site oficial respondeu 200"
       - name: Avisar matérias novas
         if: env.MUDOU == '1'
         run: node scripts/avisar.mjs noticias
