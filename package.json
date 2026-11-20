@@ -1,0 +1,1 @@
+{"name":"a6-site","private":true,"type":"module","scripts":{"previa":"node scripts/gerar.mjs --previa"},"dependencies":{"sharp":"^0.34.5"}}

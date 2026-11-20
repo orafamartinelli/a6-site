@@ -13,7 +13,8 @@ const agenda = ler('agenda.json');
 const noticias = ler('noticias.json');
 const D = cfg.dominio;
 const AGORA = Date.now();
-const VERSAO = Date.now().toString(36);
+// versão = impressão digital do CSS/JS/logo (só muda quando eles mudam → o robô não reescreve tudo à toa)
+const VERSAO = (await import('node:crypto')).createHash('md5').update(['assets/css/site.css', 'assets/js/site.js', 'assets/img/logo-a6.png'].map(f => fs.readFileSync(path.join(SITE, f))).join('')).digest('hex').slice(0, 8);
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -31,6 +32,14 @@ const WA = origem => `https://wa.me/${cfg.whatsapp}?text=${encodeURIComponent(cf
 const vivo = it => Date.parse(it.sai) > AGORA; // expirado nem entra no HTML; futuros entram e o JS segura até a hora
 const eventos = agenda.eventos.filter(vivo).sort((a, b) => a.data.localeCompare(b.data));
 const botoes = agenda.botoes.filter(vivo);
+const BANNER_PADRAO = '/assets/img/banners/camarote-2027.webp';
+for (const e of agenda.eventos) e.banner = e.banner || BANNER_PADRAO;
+// páginas de show: os que estão na agenda + os que já aconteceram (histórico) — nunca somem do Google
+const histArq = path.join(RAIZ, 'conteudo', 'eventos-historico.json');
+const historico = fs.existsSync(histArq) ? Object.values(JSON.parse(fs.readFileSync(histArq, 'utf8'))) : [];
+const paginasShow = new Map();
+for (const e of historico) if (Date.parse(e.sai) <= AGORA) paginasShow.set(e.id, { ...e, banner: e.banner || BANNER_PADRAO });
+for (const e of eventos) paginasShow.set(e.id, e);
 
 const MENU = [
   ['/', 'Home'], ['/programacao-e-ingressos/', 'Agenda'], ['/imprensa/', 'Notícias'],
@@ -108,9 +117,9 @@ const janela = it => `data-entra="${esc(it.entra)}" data-sai="${esc(it.sai)}"`;
 function cardEvento(e) {
   const x = diaMes(e.data);
   return `<article class="evento" ${janela(e)}>
-<a class="img" href="${esc(comUtm(e.link, e.id))}" target="_blank" rel="noopener"><img src="${e.banner}" alt="${esc(e.titulo)} — ${esc(e.cidade)}" loading="lazy" width="1120" height="640">
+<a class="img" href="/eventos/${e.id}/"><img src="${e.banner}" alt="${esc(e.titulo)} — ${esc(e.cidade)}" loading="lazy" width="1120" height="640">
 <span class="data"><b>${x.d}</b><span>${x.m}</span></span></a>
-<div class="corpo"><h3>${esc(e.titulo)}</h3>
+<div class="corpo"><h3><a href="/eventos/${e.id}/" style="text-decoration:none">${esc(e.titulo)}</a></h3>
 ${e.subtitulo ? `<div>${esc(e.subtitulo)}</div>` : ''}
 <div class="onde">📍 ${esc(e.local)} · ${x.d} de ${x.ml}</div>
 <a class="bt peq" href="${esc(comUtm(e.link, e.id))}" target="_blank" rel="noopener">${esc(e.botao || 'Compre seu ingresso')}</a></div>
@@ -119,7 +128,7 @@ ${e.subtitulo ? `<div>${esc(e.subtitulo)}</div>` : ''}
 const blocoAgenda = () => `<div class="agenda" data-lista-agenda>${eventos.map(cardEvento).join('\n')}</div>
 <div class="vazio" hidden>Novas datas em breve. Acompanhe as notícias da A6.</div>`;
 
-const jsonldEventos = () => eventos.map(e => ({
+const jsonldEventos = (lista = eventos) => lista.map(e => ({
   '@context': 'https://schema.org', '@type': 'Event', name: e.titulo, startDate: e.data,
   eventStatus: 'https://schema.org/EventScheduled', eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
   location: { '@type': 'Place', name: e.local, address: { '@type': 'PostalAddress', addressLocality: e.cidade.split('/')[0], addressRegion: 'PR', addressCountry: 'BR' } },
@@ -227,6 +236,34 @@ ${n.capa ? `<div class="materia-capa" style="max-width:980px"><img src="${n.capa
 <article class="texto">${n.html}</article>
 <div class="compartilhar"><a class="bt agua peq" href="${wpp}" target="_blank" rel="noopener">Compartilhar no WhatsApp</a><a class="bt roxo peq" href="/programacao-e-ingressos/">Ver agenda</a></div>
 <h2 style="margin-top:40px">Leia também</h2><div class="grade">${relacionadas.map(r => cardNoticia(r)).join('')}</div>
+</div></section>`,
+  }));
+}
+
+// PÁGINA DE CADA SHOW — /eventos/<id>/
+for (const e of paginasShow.values()) {
+  const x = diaMes(e.data);
+  const realizado = Date.parse(e.sai) <= AGORA;
+  const quando = `${x.d} de ${x.ml} de ${x.a}${e.horario ? ' · ' + e.horario : ''}`;
+  const desc = (e.texto || `${e.titulo} em ${e.cidade}, ${x.d} de ${x.ml} de ${x.a}. ${e.subtitulo || ''} Ingressos pelo link oficial da A6 Produções.`).replace(/\s+/g, ' ').trim().slice(0, 158);
+  const outros = eventos.filter(o => o.id !== e.id).slice(0, 3);
+  grava(`/eventos/${e.id}/`, layout({
+    titulo: `${e.titulo} — ${e.cidade} — ${x.d}/${String(MESES.indexOf(x.m) + 1).padStart(2, '0')}/${x.a} | ${cfg.nome}`, descricao: desc,
+    caminho: `/eventos/${e.id}/`, og: e.banner, jsonld: realizado ? [] : jsonldEventos([e]),
+    corpo: `<section class="cab-pag"><div class="cx"><div class="migalha"><a href="/">Home</a> › <a href="/programacao-e-ingressos/">Agenda</a></div>
+<h1>${esc(e.titulo)}</h1><p>📍 ${esc(e.local)} · ${quando}</p></div></section>
+<section class="secao" style="padding-top:0"><div class="cx">
+<div class="materia-capa" style="max-width:980px"><img src="${e.banner}" alt="${esc(e.titulo)} — ${esc(e.cidade)}" width="1120" height="640" fetchpriority="high"></div>
+<div class="duas"><div class="texto">
+${realizado ? `<p><b>Evento realizado em ${quando}.</b> Obrigado a todos que estiveram com a gente! Veja os próximos shows na agenda.</p>` : ''}
+${e.subtitulo ? `<p style="font-size:20px"><b>${esc(e.subtitulo)}</b></p>` : ''}
+${e.texto ? e.texto.split(/\n+/).map(p => `<p>${esc(p)}</p>`).join('') : `<p>${esc(e.titulo)} acontece em ${esc(e.local)}, no dia ${x.d} de ${x.ml} de ${x.a}${e.horario ? ', a partir das ' + esc(e.horario) : ''}. Uma realização da A6 Produções.</p>`}
+</div>
+<aside class="caixa"><h3>${realizado ? 'Evento realizado' : 'Ingressos'}</h3>
+<p><b>Quando:</b> ${quando}<br><b>Onde:</b> ${esc(e.local)}</p>
+${realizado ? '<a class="bt roxo" href="/programacao-e-ingressos/">Ver próximos shows</a>' : `<a class="bt" href="${esc(comUtm(e.link, e.id + '_pagina'))}" target="_blank" rel="noopener">${esc(e.botao)}</a><p class="aviso-form" style="margin-top:12px">Compre só pelo link oficial.</p>`}
+<p style="margin-top:16px"><a href="${WA('evento')}" target="_blank" rel="noopener">Dúvidas? Fale no WhatsApp</a></p></aside></div>
+${outros.length ? `<h2 style="margin-top:50px">Outros shows</h2><div class="agenda">${outros.map(cardEvento).join('')}</div>` : ''}
 </div></section>`,
   }));
 }

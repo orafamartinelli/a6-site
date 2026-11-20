@@ -1,0 +1,58 @@
+# Robô do site A6: lê a planilha "Agenda do site A6" + banners do Drive, gera o site e publica.
+# Disparado pelo vigia (worker a6-site-robo) via despertador, quando a planilha/pasta muda, e 1x/dia às 06:00.
+name: atualizar
+on:
+  workflow_dispatch:
+    inputs:
+      motivo:
+        description: 'por que rodou'
+        required: false
+        default: 'manual'
+concurrency:
+  group: atualizar-site
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ZAPI_INSTANCE_ID: ${{ secrets.ZAPI_INSTANCE_ID }}
+      ZAPI_TOKEN: ${{ secrets.ZAPI_TOKEN }}
+      ZAPI_CLIENT_TOKEN: ${{ secrets.ZAPI_CLIENT_TOKEN }}
+      AVISO_FONE: '5544984232574'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Ler planilha e banners
+        run: node scripts/agenda-drive.mjs
+      - name: Ler notícias novas do WhatsApp
+        run: node scripts/noticias-whatsapp.mjs
+        continue-on-error: true
+      - name: Gerar prévia
+        run: node scripts/gerar.mjs --previa
+      - name: Avisar linhas com problema na planilha
+        run: node scripts/avisar.mjs planilha
+      - name: Salvar no repositório
+        run: |
+          git config user.name "robo-a6-site"
+          git config user.email "robo@users.noreply.github.com"
+          git add -A conteudo site
+          if git diff --cached --quiet; then echo "nada mudou"; echo "MUDOU=0" >> $GITHUB_ENV; else git commit -m "robô: atualização (${{ inputs.motivo }})" && git push && echo "MUDOU=1" >> $GITHUB_ENV; fi
+      - name: Publicar prévia
+        if: env.MUDOU == '1'
+        working-directory: site
+        run: npx --yes wrangler@4 pages deploy . --project-name=a6-site-previa --branch=main --commit-dirty=true
+      - name: Avisar falha
+        if: failure()
+        run: node scripts/avisar.mjs falha
