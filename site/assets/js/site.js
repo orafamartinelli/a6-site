@@ -70,7 +70,7 @@
     try { if (window.gtag) gtag('event', nome, dados); } catch (e) {}
     try {
       if (window.fbq) {
-        if (nome === 'form_enviado') fbq('track', 'Lead', { content_name: 'contato-site' });
+        if (nome === 'form_enviado') fbq('track', 'Lead', { content_name: 'contato-site' }, dados.eid ? { eventID: dados.eid } : undefined);
         else if (nome === 'clique_whatsapp') fbq('track', 'Contact', { content_name: dados.origem || '' });
         else fbq('trackCustom', nome, dados);
       }
@@ -96,13 +96,18 @@
       var bt = form.querySelector('button[type=submit]');
       bt.disabled = true; bt.textContent = 'Enviando…';
       if (window.RastreioLP && RastreioLP.sessao) form.pagina.value = RastreioLP.pagina + ' · sessão ' + RastreioLP.sessao;
-      fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } })
+      // dados para a Meta casar o Lead do navegador com o do servidor (CAPI)
+      var eid = 'lead-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+      var cookie = function (n) { var m = document.cookie.match('(?:^|; )' + n + '=([^;]*)'); return m ? decodeURIComponent(m[1]) : ''; };
+      var fd = new FormData(form);
+      fd.append('eid', eid); fd.append('fbp', cookie('_fbp')); fd.append('fbc', cookie('_fbc')); fd.append('url', location.href.split('#')[0]);
+      fetch(form.action, { method: 'POST', body: fd, headers: { Accept: 'application/json' } })
         .then(function (r) { return r.json(); })
         .then(function (j) {
           status.textContent = (j.ok ? '✅ ' : '⚠️ ') + j.msg;
           status.style.color = j.ok ? '#0a7a3d' : '#a7054b';
           if (j.ok) { form.reset(); form.t.value = Date.now(); }
-          if (j.ok && window.a6Evento) window.a6Evento('form_enviado', { formulario: 'contato' });
+          if (j.ok && window.a6Evento) window.a6Evento('form_enviado', { formulario: 'contato', eid: eid });
         })
         .catch(function () { status.textContent = '⚠️ Não conseguimos enviar agora. Fale pelo WhatsApp (44) 3101-1045.'; })
         .then(function () { bt.disabled = false; bt.textContent = 'Enviar mensagem'; });

@@ -20,6 +20,9 @@ EMAIL_A6 = "contato@a6producoes.com.br"
 # Notícias do WhatsApp: quem pode publicar (Wallace + Rafa) e de quais grupos (A6 IMPRENSA 📲🚀 · IMPRENSA A6)
 NOTICIA_AUTORES = "5541988704900,5544984232574"
 NOTICIA_GRUPOS = "120363428127134954-group,120363423540446837-group"
+# Meta CAPI (Lead do formulário pelo servidor) — pixel "Camarote A6"; fora de a6producoes.com.br vai com test_event_code
+META_PIXEL = "729649615336498"
+META_TEST_CODE = "TEST_A6SITE"
 
 # matérias do grupo da imprensa esperando o robô do site (só grava quando chega matéria)
 [[kv_namespaces]]

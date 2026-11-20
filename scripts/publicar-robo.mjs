@@ -18,6 +18,7 @@ if (process.argv.includes('--segredos')) {
     GOOGLE_CLIENT_ID: cal.client_id || cal.installed?.client_id || cal.web?.client_id,
     GOOGLE_CLIENT_SECRET: cal.client_secret || cal.installed?.client_secret || cal.web?.client_secret,
     GOOGLE_REFRESH_TOKEN: o.refresh_token, A6_DISPARO_KEY: cofre.a6_disparo_key, LINK_KEY: cofre.link_key,
+    META_CAPI_TOKEN: j('meta-capi-a6-q2.json').token_capi,
     RESEND_KEY: (r => r.api_key?.key || r.api_key || r.key)(j('resend.json')),
     ZAPI_INSTANCE_ID: j('z-api-rafa-pessoal.json').instance_id, ZAPI_TOKEN: j('z-api-rafa-pessoal.json').instance_token, ZAPI_CLIENT_TOKEN: j('z-api-rafa-pessoal.json').client_token,
   }));

@@ -62,6 +62,34 @@ async function limiteIp(req) {
   return true;
 }
 
+async function sha256(s) {
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+async function enviarCapi(env, req, d, f, oficial) {
+  const fone = d.telefone.replace(/\D/g, '');
+  const nome = d.nome.toLowerCase().trim().split(/\s+/);
+  const user_data = {
+    em: [await sha256(d.email.toLowerCase().trim())],
+    ph: [await sha256(fone.length <= 11 ? '55' + fone : fone)],
+    fn: [await sha256(nome[0] || '')], ln: nome.length > 1 ? [await sha256(nome.at(-1))] : undefined,
+    ct: undefined, country: [await sha256('br')],
+    client_ip_address: req.headers.get('cf-connecting-ip') || undefined,
+    client_user_agent: req.headers.get('user-agent') || undefined,
+    fbp: limpa(f.get('fbp'), 100) || undefined, fbc: limpa(f.get('fbc'), 200) || undefined,
+  };
+  const corpo = {
+    data: [{ event_name: 'Lead', event_time: Math.floor(Date.now() / 1000), event_id: limpa(f.get('eid'), 60) || undefined, action_source: 'website',
+      event_source_url: limpa(f.get('url'), 300) || 'https://a6producoes.com.br/contato/', user_data,
+      custom_data: { content_name: 'contato-site', content_category: d.perfil } }],
+    ...(oficial ? {} : { test_event_code: env.META_TEST_CODE || 'TEST_A6SITE' }),
+  };
+  const r = await fetch(`https://graph.facebook.com/v21.0/${env.META_PIXEL}/events?access_token=${env.META_CAPI_TOKEN}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) });
+  const j = await r.json();
+  if (!r.ok) throw new Error('capi ' + r.status + ' ' + JSON.stringify(j).slice(0, 200));
+  return { oficial, recebidos: j.events_received };
+}
+
 async function contato(req, env) {
   const h = cors(req);
   const responder = (ok, msg, status = 200) => {
@@ -90,7 +118,13 @@ async function contato(req, env) {
       html: `<div style="font-family:system-ui,sans-serif;font-size:15px"><h2 style="color:#321166">Novo contato pelo site</h2><p><b>Nome:</b> ${escHtml(d.nome)}<br><b>Perfil:</b> ${escHtml(d.perfil)}<br><b>WhatsApp:</b> <a href="${waLead}">${escHtml(d.telefone)}</a><br><b>E-mail:</b> ${escHtml(d.email)}</p><p style="white-space:pre-wrap;background:#f2f2f2;padding:14px;border-radius:10px">${escHtml(d.mensagem)}</p><p style="color:#777;font-size:12px">Enviado da página ${escHtml(d.pagina)}. Responda este e-mail para falar direto com a pessoa.</p></div>`,
     }) }).then(r => { if (!r.ok) throw new Error('email ' + r.status); }),
   ]);
-  const falhas = resultados.filter(r => r.status === 'rejected').map(r => r.reason.message);
+  // Meta CAPI: Lead pelo servidor (mesmo event_id do navegador → a Meta deduplica). Fora do domínio oficial vai como TESTE.
+  const origem = req.headers.get('origin') || '';
+  const oficial = /^https:\/\/(www\.)?a6producoes\.com\.br$/.test(origem);
+  if (env.META_CAPI_TOKEN && env.META_PIXEL) {
+    resultados.push(...await Promise.allSettled([enviarCapi(env, req, d, f, oficial).then(r => console.log('capi', r))]));
+  }
+  const falhas = resultados.slice(0, 2).filter(r => r.status === 'rejected').map(r => r.reason.message);
   console.log('contato', JSON.stringify({ teste, falhas }));
   if (falhas.length === 2) return responder(false, 'Não conseguimos enviar agora. Fale pelo WhatsApp (44) 3101-1045.', 502);
   return responder(true, 'Mensagem enviada! Vamos responder em breve.');
