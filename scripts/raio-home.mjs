@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+const h = fs.readFileSync(new URL('../referencia/home.html', import.meta.url), 'utf8');
+const imgs = [...new Set([...h.matchAll(/https:\/\/a6producoes\.com\.br\/wp-content\/uploads\/[^"' )\s,]+?\.(?:png|jpe?g|webp|svg|gif)/gi)].map(m => m[0]))];
+console.log('IMAGENS', imgs.length); imgs.forEach(i => console.log(' ', i));
+const links = [...new Set([...h.matchAll(/href="([^"#]+)"/g)].map(m => m[1]).filter(u => !/wp-content|wp-json|xmlrpc|\.css|\.js|fonts\.g|gmpg|feed|oembed|wp-includes/.test(u)))];
+console.log('LINKS'); links.forEach(l => console.log(' ', l));
+const cores = {}; for (const m of h.matchAll(/#[0-9a-fA-F]{6}\b/g)) cores[m[0].toUpperCase()] = (cores[m[0].toUpperCase()] || 0) + 1;
+console.log('CORES', Object.entries(cores).sort((a, b) => b[1] - a[1]).slice(0, 15));
+const fontes = [...new Set([...h.matchAll(/font-family:\s*"?([^;"',}]+)/g)].map(m => m[1].trim()))];
+console.log('FONTES', fontes.slice(0, 15));
+const txt = h.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, '').replace(/<[^>]+>/g, '\n').split('\n').map(s => s.trim()).filter(s => s.length > 2);
+console.log('TEXTO'); console.log([...new Set(txt)].slice(0, 120).join(' | '));

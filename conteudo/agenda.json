@@ -1,0 +1,57 @@
+{
+  "_como_usar": "Cada evento entra no ar em 'entra' e sai sozinho em 'sai' (horário de Brasília). 'carrossel': true = aparece no banner grande da home. Banner = arquivo em site/assets/img/banners/. Link ganha UTM do site automaticamente.",
+  "eventos": [
+    {
+      "id": "ce-ta-doido-cascavel",
+      "titulo": "Cê Tá Doido",
+      "subtitulo": "",
+      "cidade": "Cascavel/PR",
+      "local": "Cascavel/PR",
+      "data": "2026-12-05",
+      "banner": "/assets/img/banners/ce-ta-doido.webp",
+      "link": "https://www.vaideingresso.com.br/ce-ta-doido-cascavel",
+      "botao": "Compre seu ingresso",
+      "entra": "2026-11-01T00:00:00-03:00",
+      "sai": "2026-12-06T06:00:00-03:00",
+      "carrossel": true
+    },
+    {
+      "id": "zeze-sunset-maringa",
+      "titulo": "Sunset Experience — Zezé Di Camargo & Luciano",
+      "subtitulo": "Na Represa · First Edition · a partir das 16h",
+      "cidade": "Maringá/PR",
+      "local": "Represa Sendeski, Maringá/PR",
+      "data": "2026-12-05T16:00:00-03:00",
+      "banner": "/assets/img/banners/zeze-sunset-agenda.webp",
+      "link": "https://q2ingressos.com.br/events/sunset-experience-na-represa-com-zeze-di-camargo-luciano",
+      "botao": "Compre seu ingresso",
+      "entra": "2026-11-01T00:00:00-03:00",
+      "sai": "2026-12-06T06:00:00-03:00",
+      "carrossel": true
+    },
+    {
+      "id": "superia-rock-foz",
+      "titulo": "Superia Rock — Humberto Gessinger",
+      "subtitulo": "Experiência imersiva no Wish Foz do Iguaçu",
+      "cidade": "Foz do Iguaçu/PR",
+      "local": "Wish Foz do Iguaçu",
+      "data": "2026-12-11",
+      "banner": "/assets/img/banners/superia-rock.webp",
+      "link": "https://superia-gessinger.vercel.app/imersiva",
+      "botao": "Garanta sua vaga",
+      "entra": "2026-11-01T00:00:00-03:00",
+      "sai": "2026-12-12T06:00:00-03:00",
+      "carrossel": true
+    }
+  ],
+  "botoes": [
+    {
+      "id": "viva-superia-2027",
+      "texto": "Viva Superia 2027",
+      "link": "https://vivasuperia-site.vercel.app/",
+      "cor": "magenta",
+      "entra": "2026-11-01T00:00:00-03:00",
+      "sai": "2027-03-01T00:00:00-03:00"
+    }
+  ]
+}
