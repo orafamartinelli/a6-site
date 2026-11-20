@@ -41,7 +41,7 @@ function layout({ titulo, descricao, caminho, corpo, og, jsonld = [], tipo = 'we
   const ld = [{
     '@context': 'https://schema.org', '@type': 'Organization', name: cfg.nome, url: D, logo: D + '/assets/img/logo-a6.png',
     address: { '@type': 'PostalAddress', streetAddress: 'R. Santos Dumont, 3317, Sala 1304 - Zona 01', addressLocality: 'Maringá', addressRegion: 'PR', postalCode: '87013-050', addressCountry: 'BR' },
-    email: cfg.email, sameAs: [cfg.youtube, cfg.instagram, cfg.facebook].filter(Boolean),
+    email: cfg.email, telephone: cfg.telefoneLink || undefined, sameAs: [cfg.youtube, cfg.instagram, cfg.facebook].filter(Boolean),
   }, ...jsonld];
   return `<!doctype html>
 <html lang="pt-BR">
@@ -61,7 +61,7 @@ ${PREVIA ? '<meta name="robots" content="noindex,nofollow">' : '<meta name="robo
 <meta property="og:locale" content="pt_BR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#321166">
-<link rel="icon" href="/assets/img/favicon.png">
+<link rel="icon" href="/assets/img/favicon.png?v=${VERSAO}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800&family=Space+Grotesk:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="/assets/css/site.css?v=${VERSAO}">
@@ -72,7 +72,7 @@ ${ld.map(o => `<script type="application/ld+json">${JSON.stringify(o)}</script>`
 <a class="pular" href="#conteudo">Ir para o conteúdo</a>
 ${PREVIA ? '<div class="previa">PRÉVIA do novo site da A6 — não é o site oficial</div>' : ''}
 <header class="topo"><div class="cx"><div class="barra">
-<a class="logo" href="/" aria-label="A6 Produções — início"><img src="/assets/img/logo-a6.png" alt="A6 Produções" width="260" height="172"></a>
+<a class="logo" href="/" aria-label="A6 Produções — início"><img src="/assets/img/logo-a6.png?v=${VERSAO}" alt="A6 Produções" width="520" height="352"></a>
 <button class="hamb" aria-label="Abrir menu" aria-expanded="false">☰</button>
 <nav aria-label="Principal"><ul class="menu">
 ${MENU.map(([h, t]) => `<li><a href="${h}"${h === caminho ? ' aria-current="page"' : ''}>${t}</a></li>`).join('\n')}
@@ -82,10 +82,11 @@ ${MENU.map(([h, t]) => `<li><a href="${h}"${h === caminho ? ' aria-current="page
 ${corpo}
 </main>
 <footer class="rodape"><div class="cx">
-<div><img src="/assets/img/logo-a6.png" alt="A6 Produções" width="90" height="60" style="width:90px;margin-bottom:14px" loading="lazy">
+<div><img src="/assets/img/logo-a6.png?v=${VERSAO}" alt="A6 Produções" width="90" height="61" style="width:90px;height:auto;margin-bottom:14px" loading="lazy">
 <p>${esc(cfg.slogan)}</p><p>${esc(cfg.endereco)}</p></div>
 <div><h4>Navegue</h4><ul>${MENU.map(([h, t]) => `<li><a href="${h}">${t}</a></li>`).join('')}</ul></div>
 <div><h4>Fale com a A6</h4><ul>
+${cfg.telefone ? `<li><a href="tel:${cfg.telefoneLink}">${esc(cfg.telefone)}</a></li>` : ''}
 <li><a href="mailto:${cfg.email}">${cfg.email}</a></li>
 <li>Imprensa: <a href="mailto:${cfg.imprensa.email}">${cfg.imprensa.email}</a></li>
 <li><a href="${cfg.youtube}" target="_blank" rel="noopener">YouTube</a></li>
@@ -258,7 +259,8 @@ grava('/contato/', layout({
 </form>
 <aside class="caixa"><h3>Informações de contato</h3>
 <p><b>E-mail:</b><br><a href="mailto:${cfg.email}">${cfg.email}</a></p>
-${cfg.telefone ? `<p><b>Telefone:</b><br>${esc(cfg.telefone)}</p>` : ''}
+${cfg.telefone ? `<p><b>Telefone:</b><br><a href="tel:${cfg.telefoneLink}">${esc(cfg.telefone)}</a></p>` : ''}
+<p><b>Redes:</b><br><a href="${cfg.instagram}" target="_blank" rel="noopener">Instagram @a6producoes</a> · <a href="${cfg.facebook}" target="_blank" rel="noopener">Facebook</a></p>
 <p><b>Imprensa:</b><br><a href="mailto:${cfg.imprensa.email}">${cfg.imprensa.email}</a></p>
 <p><b>Endereço:</b><br>${esc(cfg.endereco)}</p></aside>
 </div></section>`,

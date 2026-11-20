@@ -9,9 +9,10 @@
   "email": "contato@a6producoes.com.br",
   "imprensa": { "email": "imprensa@a6producoes.com.br", "nome": "Wallace Machado", "telefone": "(41) 98870-4900", "whatsapp": "5541988704900" },
   "whatsapp": null,
-  "telefone": null,
+  "telefone": "(44) 3101-1045",
+  "telefoneLink": "+554431011045",
   "youtube": "https://www.youtube.com/@A6Producoes",
-  "instagram": null,
-  "facebook": null,
+  "instagram": "https://www.instagram.com/a6producoes/",
+  "facebook": "https://www.facebook.com/A6ProducoesArtisticas",
   "videos": ["3tIdgxz3k0E", "1Hx1EijHr_Q", "0GERBHPG2LE", "wBj0nhNb7XI"]
 }
