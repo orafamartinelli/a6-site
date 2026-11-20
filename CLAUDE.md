@@ -1,19 +1,34 @@
 # a6-site — novo site da A6 Produções (a6producoes.com.br)
 
-Site estático (HTML/CSS/JS puro, sem WordPress) gerado por script. Vai substituir o WordPress/Elementor que o Wallace montou na Hostinger. **Hospedagem final: Hostinger** (decisão do Rafa, 17/11/2026). Prévia: https://a6-site-previa.pages.dev/ (Cloudflare Pages, noindex).
+Site estático (HTML/CSS/JS puro, sem WordPress) gerado por script. Vai substituir o WordPress/Elementor da Hostinger. **Hospedagem final: Hostinger** (decisão do Rafa, 17/11/2026). Prévia: https://a6-site-previa.pages.dev/ (Cloudflare Pages, noindex).
 
-## Como funciona
-- `conteudo/site.json` — dados fixos (contatos, endereço, vídeos do YouTube).
-- `conteudo/agenda.json` — eventos e botões com `entra`/`sai` (horário de Brasília). Expirado não entra no HTML; futuro entra escondido e o `site.js` libera na hora. `carrossel: true` = banner grande da home. Links ganham UTM `utm_source=site_a6`.
-- `conteudo/noticias.json` — as 47 matérias importadas do WP (mesmos slugs na raiz `/<slug>/` — preserva o Google).
-- `scripts/gerar.mjs [--previa]` — gera `site/`. `--previa` = noindex + faixa amarela + robots bloqueado + formulário desligado.
-- `scripts/importar.mjs` — reimporta do WP antigo (API pública) e converte imagens para WebP.
-- `scripts/fotos.mjs` — fotos celular/PC + checa estouro lateral e imagem quebrada (NODE_PATH de um projeto com playwright).
-- `scripts/publicar-previa.mjs` — publica a prévia (token do cofre `cloudflare-api-token.json`).
-- `site/.htaccess` (Hostinger) e `site/_redirects` (prévia) — 301 dos endereços antigos (/precos, /servicos, /projetos, /mesas-e-lounges…).
+## Conteúdo (quem alimenta o quê)
+- **Agenda/banners → Bianca**, pela planilha "Agenda do site A6" + pasta "Banners do site", na pasta do Drive "Agenda do site A6" (conta rafa@obutiquim; IDs em `conteudo/drive.json`). Colunas lidas pelo NOME (`scripts/agenda-drive.mjs`): Evento, Cidade, Data do show, Link do ingresso, Banner (nome do arquivo ou link do Drive) + opcionais Local, Horário, Aparece a partir de, Sai do site em, Pausar (caixinha). Aba "Botões da home (avançado)" = botões coloridos da home.
+- **Notícias → Wallace**, mandando foto + texto (≥ 280 caracteres) nos grupos "A6 IMPRENSA 📲🚀" e "IMPRENSA A6". Título = 1ª linha; foto = capa. Autores aceitos: `NOTICIA_AUTORES` no `robo/wrangler.toml` (Wallace + Rafa).
+- `conteudo/agenda.json` e `conteudo/noticias.json` são gerados — não editar agenda à mão; notícia pode ser corrigida no JSON.
 
-## Pendente (fase 2, precisa do acesso Hostinger do Wallace)
-- Painel com login para o Wallace publicar notícias (PHP na Hostinger grava em `conteudo/` e regera).
-- Robô diário: banners/agenda a partir de pasta + planilha no Drive.
-- Formulário de contato (`/enviar-contato.php`), GA4 (tag atual `GT-NC6TWLTK`) + pixel Meta + kit rastreio-lp — prévia não mede.
-- Dados que faltam: WhatsApp oficial (o site atual usa número de modelo 550900000000), telefone do contato (atual é (44) 0000-0000), Instagram/Facebook.
+## Robôs (como a mudança chega no site)
+```
+Planilha/banners mudou ──┐                                     ┌─> GitHub Actions "atualizar" (a6-site)
+                         ├─> despertador butiquim-reguas (5/5 min) ─> a6-site-robo /vigiar ─┤   lê planilha + notícias, gera, publica prévia
+Wallace no grupo ─> raro-zapi-router (bloco A6, aditivo) ─> a6-site-robo /noticia (KV) ─────┘   avisa Rafa (link da matéria / linha com problema / falha)
+```
+- **a6-site-robo** (`robo/`, Cloudflare Worker, sem cron próprio — conta sem vaga): `/vigiar` (chamado pelo despertador), `/atualizar?k=LINK_KEY` (link "Atualizar agora" na aba Leia-me), `/noticia` + `/pendentes` + `/confirmar` (notícias do WhatsApp), `/contato` (formulário). Publicar: `node scripts/publicar-robo.mjs [--segredos]`. ⚠️ toda variável dentro de `[vars]`, ANTES dos blocos `[[...]]`.
+- **Despertador** (`butiquim-reguas`): porta só-disparo `/disparar-a6-site` (chave `A6_DISPARO_KEY`, não roda o tick), linha `a6-site-atualizar` 06:05 diária, cutucada no vigia a cada 5 min (service binding `A6_ROBO`). Publicar: `node scripts/instalar-porta-despertador.mjs`.
+- **raro-zapi-router**: bloco aditivo dos grupos da imprensa (`A6_IMPRENSA_GROUP_IDS`, binding `A6_ROBO`). Publicado por `node scripts/roteador-imprensa.mjs publicar`, que parte do código NO AR (a cópia em hub_reservas/infra está desatualizada) e mantém todas as ligações. Backup do código anterior: `referencia/raro-zapi-router-no-ar-antes.js`.
+- Workflow `.github/workflows/atualizar.yml` (só workflow_dispatch). Segredos: `node scripts/configurar-segredos.mjs`.
+- Ponta a ponta medido em 20/11/2026: planilha → site em ~3 min; matéria do grupo → site em ~1,5 min.
+
+## Formulário de contato
+POST no `a6-site-robo/contato` → WhatsApp + e-mail (Resend, remetente avisos@orafamartinelli.com.br, reply-to = quem preencheu). **`MODO_TESTE = "1"`** no `robo/wrangler.toml` = vai pro Rafa com [TESTE]; trocar para "0" depois do OK do Rafa → WhatsApp (44) 3101-1045 + contato@a6producoes.com.br. Armadilha anti-robô (campo oculto + tempo mínimo) e limite de 5 envios/hora por IP.
+
+## Medição
+Só na versão oficial (`node scripts/gerar.mjs` sem `--previa`): GA4 `GT-NC6TWLTK` (tag do site atual), pixel "Camarote A6" `729649615336498` (Lead no formulário, Contact no WhatsApp, `clique_ingresso` custom) e kit rastreio-lp (`a6-site`, view `lp_funil`). Prévia: só com `?rastreio_teste=1` (grava como `a6-site-teste`).
+
+## Scripts
+`gerar.mjs [--previa]` · `importar.mjs` (reimporta do WP) · `fotos.mjs` (celular/PC, NODE_PATH com playwright) · `publicar-previa.mjs` · `criar-planilha.mjs` / `reestruturar-planilha.mjs` (já rodados) · `teste-celula.mjs` / `teste-noticia.mjs` (testes) · `zapi-grupos.mjs` (só leitura).
+
+## Pendente
+- Hostinger (acesso do Wallace): publicar `site/` por FTP no workflow, trocar domínio, gerar sem `--previa`.
+- Virar `MODO_TESTE` do formulário para "0" após validação do Rafa.
+- Compartilhar a pasta "Agenda do site A6" com a Bianca (precisa do e-mail e do OK do Rafa).
