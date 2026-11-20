@@ -10,17 +10,17 @@
     "link": "https://www.vaideingresso.com.br/ce-ta-doido-cascavel",
     "botao": "Compre seu ingresso",
     "banner": "/assets/img/eventos/ce-ta-doido-cascavel-819c8efc.webp",
-    "entra": "2000-01-01T00:00:00-03:00",
-    "sai": "2026-12-06T06:00:00-03:00",
+    "entra": "2026-11-01T00:00:00-03:00",
+    "sai": "2026-12-06T09:00:00.000Z",
     "carrossel": true,
     "noAr": true,
     "texto": "",
-    "vistoEm": "2026-11-20T03:56:44.177Z"
+    "vistoEm": "2026-11-20T03:57:24.347Z"
   },
   "sunset-experience-zeze-di-camargo-e-luciano-maringa": {
     "id": "sunset-experience-zeze-di-camargo-e-luciano-maringa",
     "titulo": "Sunset Experience — Zezé Di Camargo & Luciano",
-    "subtitulo": "Na Represa · First Edition · a partir das 16h",
+    "subtitulo": "",
     "cidade": "Maringá/PR",
     "local": "Represa Sendeski, Maringá/PR",
     "data": "2026-12-05T16:00:00-03:00",
@@ -28,29 +28,29 @@
     "link": "https://q2ingressos.com.br/events/sunset-experience-na-represa-com-zeze-di-camargo-luciano",
     "botao": "Compre seu ingresso",
     "banner": "/assets/img/eventos/sunset-experience-zeze-di-camargo-e-luciano-maringa-480ad685.webp",
-    "entra": "2000-01-01T00:00:00-03:00",
-    "sai": "2026-12-06T06:00:00-03:00",
+    "entra": "2026-11-01T00:00:00-03:00",
+    "sai": "2026-12-06T09:00:00.000Z",
     "carrossel": true,
     "noAr": true,
     "texto": "",
-    "vistoEm": "2026-11-20T03:56:44.179Z"
+    "vistoEm": "2026-11-20T03:57:24.347Z"
   },
   "superia-rock-humberto-gessinger-foz-do-iguacu": {
     "id": "superia-rock-humberto-gessinger-foz-do-iguacu",
     "titulo": "Superia Rock — Humberto Gessinger",
-    "subtitulo": "Experiência imersiva no Wish Foz do Iguaçu",
+    "subtitulo": "",
     "cidade": "Foz do Iguaçu/PR",
     "local": "Wish Foz do Iguaçu",
     "data": "2026-12-11",
     "horario": "",
     "link": "https://superia-gessinger.vercel.app/imersiva",
-    "botao": "Garanta sua vaga",
+    "botao": "Compre seu ingresso",
     "banner": "/assets/img/eventos/superia-rock-humberto-gessinger-foz-do-iguacu-3bd33be5.webp",
-    "entra": "2000-01-01T00:00:00-03:00",
-    "sai": "2026-12-12T06:00:00-03:00",
+    "entra": "2026-11-01T00:00:00-03:00",
+    "sai": "2026-12-12T09:00:00.000Z",
     "carrossel": true,
     "noAr": true,
     "texto": "",
-    "vistoEm": "2026-11-20T03:56:44.179Z"
+    "vistoEm": "2026-11-20T03:57:24.347Z"
   }
 }
