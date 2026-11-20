@@ -4,5 +4,6 @@ import path from 'node:path';
 import { g, SHEETS } from './google.mjs';
 const drive = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, '..', 'conteudo', 'drive.json'), 'utf8'));
 const [faixa, valor] = process.argv.slice(2);
-await g(`${SHEETS}/${drive.planilha}/values/${encodeURIComponent(faixa)}?valueInputOption=RAW`, { method: 'PUT', body: JSON.stringify({ values: [[valor ?? '']] }) });
+const modo = process.argv.includes('--formula') ? 'USER_ENTERED' : 'RAW';
+await g(`${SHEETS}/${drive.planilha}/values/${encodeURIComponent(faixa)}?valueInputOption=${modo}`, { method: 'PUT', body: JSON.stringify({ values: [[valor ?? '']] }) });
 console.log('gravado', faixa, '=', JSON.stringify(valor), new Date().toISOString());

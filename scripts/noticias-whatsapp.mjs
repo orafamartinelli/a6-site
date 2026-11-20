@@ -15,7 +15,7 @@ const pend = await (await fetch(`${URL_ROBO}/pendentes?key=${KEY}`)).json();
 if (!pend.length) { console.log('nenhuma matéria nova'); process.exit(0); }
 
 const semAcento = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
-const slugDe = s => semAcento(s).toLowerCase().replace(/&/g, ' e ').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 90).replace(/-[^-]*$/, '');
+const slugDe = s => { const t = semAcento(s).toLowerCase().replace(/&/g, ' e ').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); return t.length <= 90 ? t : t.slice(0, 90).replace(/-[^-]*$/, ''); };
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 // formatação do WhatsApp → HTML (*negrito*, _itálico_)
 const fmt = s => esc(s).replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>').replace(/(^|\s)_([^_\n]+)_(?=\s|$)/g, '$1<em>$2</em>');

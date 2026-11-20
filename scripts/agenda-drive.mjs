@@ -33,19 +33,31 @@ function dataBR(v, horaPadrao = '00:00') {
 }
 const somaDias = (iso, d) => new Date(Date.parse(iso) + d * 864e5).toISOString();
 
-async function aba(nome) {
-  const r = await g(`${SHEETS}/${drive.planilha}/values/${encodeURIComponent(nome)}?valueRenderOption=FORMATTED_VALUE`);
-  const [cab, ...linhas] = r.values || [];
-  return linhas.map((l, i) => ({ n: i + 2, l }));
+// lê a aba e devolve cada linha como objeto pelo NOME da coluna (a ordem pode mudar sem quebrar)
+async function aba(...nomes) {
+  for (const nome of nomes) {
+    try {
+      const r = await g(`${SHEETS}/${drive.planilha}/values/${encodeURIComponent(nome)}?valueRenderOption=FORMATTED_VALUE`);
+      const [cab = [], ...linhas] = r.values || [];
+      const chaves = cab.map(c => semAcento(String(c)).toLowerCase());
+      return linhas.map((l, i) => ({ n: i + 2, l, col: (...termos) => { const j = chaves.findIndex(c => termos.every(t => c.includes(t))); return j < 0 ? '' : String(l[j] ?? '').trim(); } }));
+    } catch (e) { if (nome === nomes.at(-1)) throw e; }
+  }
 }
+const marcado = v => /^(true|verdadeiro|sim|x|1)$/i.test(String(v || '').trim());
+const fimDoDia = v => /\d{1,2}:\d{2}/.test(String(v)) ? dataBR(v) : dataBR(v, '23:59');
 
 // banners da pasta
 const arquivos = (await g(`${DRIVE}/files?` + qs({ q: `'${drive.pastaBanners}' in parents and trashed=false`, fields: 'files(id,name,mimeType,modifiedTime,md5Checksum)', pageSize: '500' }))).files;
 const porNome = new Map(arquivos.map(a => [semAcento(a.name).toLowerCase().trim(), a]));
+const porId = new Map(arquivos.map(a => [a.id, a]));
 async function banner(nomeArquivo, base, linha) {
   const chave = semAcento(String(nomeArquivo || '')).toLowerCase().trim();
-  if (!chave) { avisos.push(`Linha ${linha}: sem nome de banner — usei a logo.`); return null; }
-  const arq = porNome.get(chave) || [...porNome.entries()].find(([k]) => k.replace(/\.\w+$/, '') === chave.replace(/\.\w+$/, ''))?.[1];
+  if (!chave) { avisos.push(`Linha ${linha}: sem nome de banner — usei a arte padrão.`); return null; }
+  const idLink = String(nomeArquivo).match(/(?:\/d\/|[?&]id=)([\w-]{20,})/)?.[1]; // aceita também o link do Drive
+  let arq = idLink && porId.get(idLink);
+  if (idLink && !arq) arq = await g(`${DRIVE}/files/${idLink}?` + qs({ fields: 'id,name,modifiedTime' })).catch(() => null);
+  arq = arq || porNome.get(chave) || [...porNome.entries()].find(([k]) => k.replace(/\.\w+$/, '') === chave.replace(/\.\w+$/, ''))?.[1];
   if (!arq) { avisos.push(`Linha ${linha}: banner "${nomeArquivo}" não está na pasta "Banners do site".`); return null; }
   const h = crypto.createHash('md5').update(arq.id + arq.modifiedTime).digest('hex').slice(0, 8);
   const nome = `${base}-${h}.webp`;
@@ -61,9 +73,13 @@ async function banner(nomeArquivo, base, linha) {
 }
 
 const eventos = [];
-for (const { n, l } of await aba('Agenda')) {
-  const [noAr, titulo, subtitulo, cidade, local, data, horario, link, botao, arqBanner, entra, sai, carrossel, texto] = l.map(x => (x ?? '').toString().trim());
+for (const { n, col } of await aba('Agenda')) {
+  const titulo = col('evento'), cidade = col('cidade'), local = col('local'), data = col('data do show'), horario = col('horario');
+  const link = col('link'), arqBanner = col('banner'), entra = col('aparece'), sai = col('sai do site'), pausar = col('pausar');
+  const subtitulo = col('subtitulo'), botao = col('texto do botao'), texto = col('texto da pagina');
+  const noAr = !marcado(pausar), carrossel = col('carrossel') === '' ? true : /^s/i.test(col('carrossel'));
   if (!titulo) continue;
+  if (!link) { avisos.push(`Linha ${n} (${titulo}): falta o link do ingresso.`); continue; }
   const dataShow = dataBR(data, horario && /^\d{1,2}:\d{2}/.test(horario) ? horario.slice(0, 5).padStart(5, '0') : '00:00');
   if (!dataShow) { avisos.push(`Linha ${n} (${titulo}): data do show "${data}" não entendida — use 05/12/2026.`); continue; }
   if (link && !/^https?:\/\//.test(link)) { avisos.push(`Linha ${n} (${titulo}): link do ingresso precisa começar com https://`); continue; }
@@ -74,18 +90,19 @@ for (const { n, l } of await aba('Agenda')) {
     link, botao: botao || 'Compre seu ingresso',
     banner: await banner(arqBanner, id, n),
     entra: dataBR(entra) || '2000-01-01T00:00:00-03:00',
-    sai: dataBR(sai, '06:00') || somaDias(dataShow.slice(0, 10) + 'T06:00:00-03:00', 1),
-    carrossel: sim(carrossel), noAr: sim(noAr), texto,
+    sai: fimDoDia(sai) || somaDias(dataShow.slice(0, 10) + 'T06:00:00-03:00', 1),
+    carrossel, noAr, texto,
   };
   if (!dataBR(sai) && sai) avisos.push(`Linha ${n} (${titulo}): "Sai do site em" não entendido — usei o dia seguinte ao show.`);
+  if (entra && !dataBR(entra)) avisos.push(`Linha ${n} (${titulo}): "Aparece no site a partir de" não entendido — mostrei já.`);
   eventos.push(ev);
 }
 
 const botoes = [];
-for (const { n, l } of await aba('Botões')) {
-  const [noAr, texto, link, cor, entra, sai] = l.map(x => (x ?? '').toString().trim());
+for (const { col } of await aba('Botões da home (avançado)', 'Botões')) {
+  const noAr = col('no ar'), texto = col('texto'), link = col('link'), cor = col('cor'), entra = col('entra'), sai = col('sai');
   if (!texto || !link) continue;
-  if (!sim(noAr)) continue;
+  if (noAr && !sim(noAr)) continue;
   botoes.push({ id: slug(texto), texto, link, cor: (cor || '').toLowerCase(), entra: dataBR(entra) || '2000-01-01T00:00:00-03:00', sai: dataBR(sai) || '2100-01-01T00:00:00-03:00' });
 }
 

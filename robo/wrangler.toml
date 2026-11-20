@@ -4,12 +4,22 @@ compatibility_date = "2025-01-01"
 workers_dev = true
 
 # sem cron próprio (a conta não tem vaga): o despertador butiquim-reguas chama /vigiar a cada 5 min
+# ATENÇÃO: toda variável fica DENTRO de [vars] (antes dos blocos [[...]]), senão o TOML joga ela no bloco errado.
 
 [vars]
 PLANILHA = "1ilmAzUPylDgrqY_mnFoxE85iiFhJwGmOah20McbJ7AQ"
 PASTA_SITE_NOVO = "1On4Jhs4IDFdkkTFGKR07Q676o3d2EvI0"
 PASTA_BANNERS = "1-bFehuoHfA3m-pgyGEGyJ4IsdAcWySxJ"
 DESPERTADOR_URL = "https://butiquim-reguas.rafa-572.workers.dev"
+# Formulário de contato: MODO_TESTE = "1" manda tudo pro Rafa com [TESTE]; "0" manda pra A6.
+MODO_TESTE = "1"
+WA_TESTE = "5544984232574"
+EMAIL_TESTE = "rafa@obutiquim.com.br"
+WA_A6 = "554431011045"
+EMAIL_A6 = "contato@a6producoes.com.br"
+# Notícias do WhatsApp: quem pode publicar (Wallace + Rafa p/ teste) e de qual grupo (vazio = o que o roteador mandar)
+NOTICIA_AUTORES = "5541988704900,5544984232574"
+NOTICIA_GRUPOS = "120363428127134954-group,120363423540446837-group"
 
 # matérias do grupo da imprensa esperando o robô do site (só grava quando chega matéria)
 [[kv_namespaces]]
@@ -20,14 +30,6 @@ id = "505f99c9edf6498a8ffb57df25f3945a"
 [[services]]
 binding = "DESPERTADOR"
 service = "butiquim-reguas"
-# Formulário de contato: MODO_TESTE = "1" manda tudo pro Rafa com [TESTE]; "0" manda pra A6.
-MODO_TESTE = "1"
-WA_TESTE = "5544984232574"
-EMAIL_TESTE = "rafa@obutiquim.com.br"
-WA_A6 = "554431011045"
-EMAIL_A6 = "contato@a6producoes.com.br"
-# Notícias do WhatsApp: quem pode publicar (Wallace + Rafa p/ teste) e de qual grupo (vazio = o que o roteador mandar)
-NOTICIA_AUTORES = "5541988704900,5544984232574"
-NOTICIA_GRUPOS = ""
+
 # segredos (wrangler secret bulk): GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, A6_DISPARO_KEY, LINK_KEY,
 # RESEND_KEY, ZAPI_INSTANCE_ID, ZAPI_TOKEN, ZAPI_CLIENT_TOKEN
