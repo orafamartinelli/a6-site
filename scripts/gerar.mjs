@@ -46,6 +46,18 @@ const MENU = [
   ['/camarote-a6/', 'Camarote A6'], ['/sobre/', 'A empresa'], ['/contato/', 'Contato'],
 ];
 
+// MEDIÇÃO — oficial: GA4 (tag do site atual) + pixel "Camarote A6" + kit rastreio-lp (funil no Supabase, view lp_funil).
+// Prévia: nada mede, exceto com ?rastreio_teste=1 (só o kit, gravando como site "a6-site-teste").
+const GA4 = 'GT-NC6TWLTK';
+const PIXEL = '729649615336498';
+function medicao() {
+  if (PREVIA) return `<script>if(/[?&]rastreio_teste=1/.test(location.search)){var s=document.createElement('script');s.src='/assets/js/rastreio-lp.js?v=${VERSAO}';s.dataset.site='a6-site';s.dataset.vercelBase='off';document.head.appendChild(s)}</script>`;
+  return `<script src="/assets/js/rastreio-lp.js?v=${VERSAO}" data-site="a6-site" data-vercel-base="off" defer></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=${GA4}"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${GA4}');</script>
+<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${PIXEL}');fbq('track','PageView');</script>`;
+}
+
 function layout({ titulo, descricao, caminho, corpo, og, jsonld = [], tipo = 'website' }) {
   const url = D + caminho;
   const imagem = D + (og || '/assets/img/banners/zeze-sunset.webp');
@@ -77,7 +89,7 @@ ${PREVIA ? '<meta name="robots" content="noindex,nofollow">' : '<meta name="robo
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800&family=Space+Grotesk:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="/assets/css/site.css?v=${VERSAO}">
 ${ld.map(o => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join('\n')}
-<!-- MEDICAO: GA4 + pixel entram na publicação oficial (prévia não mede) -->
+${medicao()}
 </head>
 <body>
 <a class="pular" href="#conteudo">Ir para o conteúdo</a>
@@ -122,7 +134,7 @@ function cardEvento(e) {
 <div class="corpo"><h3><a href="/eventos/${e.id}/" style="text-decoration:none">${esc(e.titulo)}</a></h3>
 ${e.subtitulo ? `<div>${esc(e.subtitulo)}</div>` : ''}
 <div class="onde">📍 ${esc(e.local)} · ${x.d} de ${x.ml}</div>
-<a class="bt peq" href="${esc(comUtm(e.link, e.id))}" target="_blank" rel="noopener">${esc(e.botao || 'Compre seu ingresso')}</a></div>
+<a class="bt peq" href="${esc(comUtm(e.link, e.id))}" target="_blank" rel="noopener" data-ingresso="${e.id}" data-lugar="card" data-rastreio-cta="ingresso ${e.id}">${esc(e.botao || 'Compre seu ingresso')}</a></div>
 </article>`;
 }
 const blocoAgenda = () => `<div class="agenda" data-lista-agenda>${eventos.map(cardEvento).join('\n')}</div>
@@ -156,7 +168,7 @@ grava('/', layout({
   titulo: `${cfg.nome} — ${cfg.slogan}`, descricao: cfg.descricao, caminho: '/', jsonld: jsonldEventos(),
   corpo: `
 <section class="carrossel" aria-label="Destaques">
-<div class="trilho">${slides.map((e, i) => `<a class="slide" ${janela(e)} href="${esc(comUtm(e.link, e.id + '_banner'))}" target="_blank" rel="noopener">
+<div class="trilho">${slides.map((e, i) => `<a class="slide" ${janela(e)} href="${esc(comUtm(e.link, e.id + '_banner'))}" target="_blank" rel="noopener" data-ingresso="${e.id}" data-lugar="banner" data-rastreio-cta="ingresso ${e.id}">
 <img src="${e.banner}" alt="${esc(e.titulo)} — ${esc(e.cidade)}" width="1120" height="640" ${i ? 'loading="lazy"' : 'fetchpriority="high"'}>
 <span class="selo">${diaMes(e.data).d} de ${diaMes(e.data).ml} · ${esc(e.cidade)}</span></a>`).join('\n')}</div>
 <div class="setas"><button class="ant" aria-label="Anterior">‹</button><button class="prox" aria-label="Próximo">›</button></div>
@@ -261,7 +273,7 @@ ${e.texto ? e.texto.split(/\n+/).map(p => `<p>${esc(p)}</p>`).join('') : `<p>${e
 </div>
 <aside class="caixa"><h3>${realizado ? 'Evento realizado' : 'Ingressos'}</h3>
 <p><b>Quando:</b> ${quando}<br><b>Onde:</b> ${esc(e.local)}</p>
-${realizado ? '<a class="bt roxo" href="/programacao-e-ingressos/">Ver próximos shows</a>' : `<a class="bt" href="${esc(comUtm(e.link, e.id + '_pagina'))}" target="_blank" rel="noopener">${esc(e.botao)}</a><p class="aviso-form" style="margin-top:12px">Compre só pelo link oficial.</p>`}
+${realizado ? '<a class="bt roxo" href="/programacao-e-ingressos/">Ver próximos shows</a>' : `<a class="bt" href="${esc(comUtm(e.link, e.id + '_pagina'))}" target="_blank" rel="noopener" data-ingresso="${e.id}" data-lugar="pagina" data-rastreio-cta="ingresso ${e.id}">${esc(e.botao)}</a><p class="aviso-form" style="margin-top:12px">Compre só pelo link oficial.</p>`}
 <p style="margin-top:16px"><a href="${WA('evento')}" target="_blank" rel="noopener">Dúvidas? Fale no WhatsApp</a></p></aside></div>
 ${outros.length ? `<h2 style="margin-top:50px">Outros shows</h2><div class="agenda">${outros.map(cardEvento).join('')}</div>` : ''}
 </div></section>`,
@@ -287,7 +299,8 @@ grava('/contato/', layout({
   caminho: '/contato/',
   corpo: `<section class="cab-pag"><div class="cx"><h1>Entre em contato</h1><p>Quer levar um grande evento para sua cidade ou fechar uma parceria com a A6 Produções? Estamos prontos para atender artistas, produtores, marcas, patrocinadores e gestores públicos.</p></div></section>
 <section class="secao"><div class="cx duas">
-<form class="contato" action="/enviar-contato.php" method="post" ${PREVIA ? 'onsubmit="alert(\'Prévia: o envio será ligado na versão oficial.\');return false"' : ''}>
+<form class="contato" action="https://a6-site-robo.rafa-572.workers.dev/contato" method="post" data-contato>
+<input type="hidden" name="t" value=""><input type="hidden" name="pagina" value="/contato/">
 <label>Nome *<input name="nome" required autocomplete="name"></label>
 <label>E-mail *<input name="email" type="email" required autocomplete="email"></label>
 <label>Telefone / WhatsApp *<input name="telefone" type="tel" required autocomplete="tel"></label>
@@ -295,7 +308,7 @@ grava('/contato/', layout({
 <label>Conte pra nós *<textarea name="mensagem" required></textarea></label>
 <input type="text" name="site" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
 <button class="bt" type="submit">Enviar mensagem</button>
-<p class="aviso-form">Respondemos pelo e-mail ou telefone informado.</p>
+<p class="aviso-form" data-status>Respondemos pelo e-mail ou WhatsApp informado.</p>
 </form>
 <aside class="caixa"><h3>Informações de contato</h3>
 <p><b>E-mail:</b><br><a href="mailto:${cfg.email}">${cfg.email}</a></p>

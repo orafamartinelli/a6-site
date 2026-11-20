@@ -13,7 +13,12 @@ async function zap(texto) {
   console.log('zap', r.status);
 }
 
-if (modo === 'falha') {
+if (modo === 'noticias') {
+  const arq = path.join(RAIZ, 'conteudo', 'noticias-novas.json');
+  const novas = fs.existsSync(arq) ? JSON.parse(fs.readFileSync(arq, 'utf8')) : [];
+  const base = process.env.SITE_URL || 'https://a6-site-previa.pages.dev';
+  if (novas.length) await zap(`📰 *Matéria nova no site da A6* (veio do grupo da imprensa):\n\n${novas.map(n => `• ${n.titulo}\n${base}/${n.slug}/`).join('\n\n')}\n\nSe algo estiver errado, me avise que eu ajusto ou tiro do ar.`);
+} else if (modo === 'falha') {
   await zap(`⚠️ *Robô do site A6* falhou agora.\nDetalhes: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}`);
 } else if (modo === 'planilha') {
   const rel = JSON.parse(fs.readFileSync(path.join(RAIZ, 'conteudo', 'agenda-relatorio.json'), 'utf8'));

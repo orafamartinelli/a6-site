@@ -64,6 +64,51 @@
     }, { once: true });
   });
 
+  // medição: um ponto só manda pro GA4, pixel e funil (cada um só existe na versão oficial)
+  window.a6Evento = function (nome, dados) {
+    dados = dados || {};
+    try { if (window.gtag) gtag('event', nome, dados); } catch (e) {}
+    try {
+      if (window.fbq) {
+        if (nome === 'form_enviado') fbq('track', 'Lead', { content_name: 'contato-site' });
+        else if (nome === 'clique_whatsapp') fbq('track', 'Contact', { content_name: dados.origem || '' });
+        else fbq('trackCustom', nome, dados);
+      }
+    } catch (e) {}
+    try { if (window.RastreioLP && nome === 'form_enviado') RastreioLP.evento('form_enviado', null, dados.formulario || 'contato'); } catch (e) {}
+  };
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a');
+    if (!a) return;
+    if (/wa\.me\/\d/.test(a.href)) a6Evento('clique_whatsapp', { origem: a.getAttribute('data-wa') || 'link' });
+    else if (a.hasAttribute('data-ingresso')) a6Evento('clique_ingresso', { evento: a.getAttribute('data-ingresso'), lugar: a.getAttribute('data-lugar') || '' });
+  }, true);
+
+  // formulário de contato: envia sem sair da página
+  var form = document.querySelector('[data-contato]');
+  if (form) {
+    form.t.value = Date.now();
+    var status = form.querySelector('[data-status]');
+    if (/[?&]enviado=1/.test(location.search)) status.textContent = '✅ Mensagem enviada! Vamos responder em breve.';
+    form.addEventListener('submit', function (ev) {
+      if (!window.fetch) return;
+      ev.preventDefault();
+      var bt = form.querySelector('button[type=submit]');
+      bt.disabled = true; bt.textContent = 'Enviando…';
+      if (window.RastreioLP && RastreioLP.sessao) form.pagina.value = RastreioLP.pagina + ' · sessão ' + RastreioLP.sessao;
+      fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          status.textContent = (j.ok ? '✅ ' : '⚠️ ') + j.msg;
+          status.style.color = j.ok ? '#0a7a3d' : '#a7054b';
+          if (j.ok) { form.reset(); form.t.value = Date.now(); }
+          if (j.ok && window.a6Evento) window.a6Evento('form_enviado', { formulario: 'contato' });
+        })
+        .catch(function () { status.textContent = '⚠️ Não conseguimos enviar agora. Fale pelo WhatsApp (44) 3101-1045.'; })
+        .then(function () { bt.disabled = false; bt.textContent = 'Enviar mensagem'; });
+    });
+  }
+
   // notícias: carregar mais
   var botaoMais = document.querySelector('[data-carregar-mais]');
   if (botaoMais) {

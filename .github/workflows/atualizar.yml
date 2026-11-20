@@ -27,6 +27,8 @@ jobs:
       ZAPI_TOKEN: ${{ secrets.ZAPI_TOKEN }}
       ZAPI_CLIENT_TOKEN: ${{ secrets.ZAPI_CLIENT_TOKEN }}
       AVISO_FONE: '5544984232574'
+      NOTICIAS_URL: ${{ vars.NOTICIAS_URL }}
+      A6_DISPARO_KEY: ${{ secrets.A6_DISPARO_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -53,6 +55,9 @@ jobs:
         if: env.MUDOU == '1'
         working-directory: site
         run: npx --yes wrangler@4 pages deploy . --project-name=a6-site-previa --branch=main --commit-dirty=true
+      - name: Avisar matérias novas
+        if: env.MUDOU == '1'
+        run: node scripts/avisar.mjs noticias
       - name: Avisar falha
         if: failure()
         run: node scripts/avisar.mjs falha
