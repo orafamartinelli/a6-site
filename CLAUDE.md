@@ -43,4 +43,5 @@ Só na versão oficial (`node scripts/gerar.mjs` sem `--previa`): GA4 `GT-NC6TWL
 2. Segredos `HOSTINGER_FTP_HOST/USER/PASS` (+ variável `HOSTINGER_DIR` se não for public_html).
 3. Tirar o WordPress do public_html (o espelho FTP não apaga arquivos antigos; `index.php` do WP venceria o `index.html`).
 4. `gh variable set HOSTINGER_ATIVO -R orafamartinelli/a6-site --body 1` e rodar `gh workflow run atualizar.yml -f motivo=oficial`.
-5. Conferir páginas com barra final, 301 do `.htaccess`, GA4/pixel disparando, Search Console (reenviar sitemap).
+5. Conferir páginas com barra final, 301 do `.htaccess`, GA4/pixel disparando (Test Events da Meta), Search Console (reenviar sitemap).
+6. Depois que `clique_ingresso` aparecer no pixel 729649615336498: pedir ao Gestor a conversão "Clique ingresso – Site A6" (categoria Outro). A API recusou antes (erro 100/1760020) porque o pixel nunca recebeu o evento; se recusar de novo, criar à mão no Gerenciador de Eventos. Já existe "Lead – Site A6" (id 2409271213142281, Lead + content_name contém "-site").
