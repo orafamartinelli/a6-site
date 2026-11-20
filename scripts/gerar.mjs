@@ -26,6 +26,8 @@ const comUtm = (link, campanha) => {
   u.searchParams.set('utm_source', 'site_a6'); u.searchParams.set('utm_medium', 'site'); u.searchParams.set('utm_campaign', campanha);
   return u.toString();
 };
+// origem fica no código para virar evento de medição (GA4/pixel) na versão oficial
+const WA = origem => `https://wa.me/${cfg.whatsapp}?text=${encodeURIComponent(cfg.whatsappTexto)}" data-wa="${origem}`;
 const vivo = it => Date.parse(it.sai) > AGORA; // expirado nem entra no HTML; futuros entram e o JS segura até a hora
 const eventos = agenda.eventos.filter(vivo).sort((a, b) => a.data.localeCompare(b.data));
 const botoes = agenda.botoes.filter(vivo);
@@ -86,7 +88,7 @@ ${corpo}
 <p>${esc(cfg.slogan)}</p><p>${esc(cfg.endereco)}</p></div>
 <div><h4>Navegue</h4><ul>${MENU.map(([h, t]) => `<li><a href="${h}">${t}</a></li>`).join('')}</ul></div>
 <div><h4>Fale com a A6</h4><ul>
-${cfg.telefone ? `<li><a href="tel:${cfg.telefoneLink}">${esc(cfg.telefone)}</a></li>` : ''}
+${cfg.telefone ? `<li><a href="${WA('rodape')}" target="_blank" rel="noopener">WhatsApp ${esc(cfg.telefone)}</a></li>` : ''}
 <li><a href="mailto:${cfg.email}">${cfg.email}</a></li>
 <li>Imprensa: <a href="mailto:${cfg.imprensa.email}">${cfg.imprensa.email}</a></li>
 <li><a href="${cfg.youtube}" target="_blank" rel="noopener">YouTube</a></li>
@@ -95,6 +97,7 @@ ${cfg.facebook ? `<li><a href="${cfg.facebook}" target="_blank" rel="noopener">F
 </ul></div>
 <div class="fim">© ${new Date().getFullYear()} ${esc(cfg.nome)} — Maringá/PR · CNPJ ${cfg.cnpj} · ${esc(cfg.razao)}</div>
 </div></footer>
+${cfg.whatsapp ? `<a class="wa-flutuante" href="${WA('botao_flutuante')}" target="_blank" rel="noopener" aria-label="Falar com a A6 no WhatsApp"><svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><path fill="#fff" d="M16 3a13 13 0 0 0-11.2 19.6L3 29l6.6-1.7A13 13 0 1 0 16 3zm0 23.7c-2 0-4-.5-5.7-1.6l-.4-.2-3.9 1 1-3.8-.3-.4A10.7 10.7 0 1 1 16 26.7zm5.9-8c-.3-.2-1.9-1-2.2-1-.3-.1-.5-.2-.7.1l-1 1.2c-.2.2-.4.3-.7.1a8.8 8.8 0 0 1-4.4-3.8c-.3-.6.3-.5.9-1.7.1-.2 0-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.2 1.4 3.5c.2.2 2.4 3.6 5.8 5 2.1.9 3 1 4 .8.7-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5l-.6-.4z"/></svg></a>` : ''}
 <script src="/assets/js/site.js?v=${VERSAO}" defer></script>
 </body>
 </html>`;
@@ -259,7 +262,7 @@ grava('/contato/', layout({
 </form>
 <aside class="caixa"><h3>Informações de contato</h3>
 <p><b>E-mail:</b><br><a href="mailto:${cfg.email}">${cfg.email}</a></p>
-${cfg.telefone ? `<p><b>Telefone:</b><br><a href="tel:${cfg.telefoneLink}">${esc(cfg.telefone)}</a></p>` : ''}
+${cfg.telefone ? `<p><b>WhatsApp:</b><br><a href="${WA('contato')}" target="_blank" rel="noopener">${esc(cfg.telefone)}</a></p>` : ''}
 <p><b>Redes:</b><br><a href="${cfg.instagram}" target="_blank" rel="noopener">Instagram @a6producoes</a> · <a href="${cfg.facebook}" target="_blank" rel="noopener">Facebook</a></p>
 <p><b>Imprensa:</b><br><a href="mailto:${cfg.imprensa.email}">${cfg.imprensa.email}</a></p>
 <p><b>Endereço:</b><br>${esc(cfg.endereco)}</p></aside>

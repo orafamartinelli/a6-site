@@ -147,5 +147,9 @@ form.contato textarea{min-height:140px}
 .rodape .fim{grid-column:1/-1;border-top:1px solid rgba(255,255,255,.1);padding-top:20px;font-size:13px;opacity:.75}
 @media(max-width:760px){.rodape .cx{grid-template-columns:1fr}}
 
+/* WhatsApp flutuante */
+.wa-flutuante{position:fixed;right:18px;bottom:18px;z-index:60;width:60px;height:60px;border-radius:50%;background:#25d366;display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:transform .2s}
+.wa-flutuante:hover{transform:scale(1.08)}
+
 /* agenda: liga/desliga por data (o JS marca .fora-do-ar) */
 .fora-do-ar{display:none!important}
