@@ -1,5 +1,20 @@
 [
   {
+    "slug": "teste-materia-de-teste-do-robo-do-site-pode",
+    "titulo": "[TESTE] Matéria de teste do robô do site — pode apagar",
+    "data": "2026-11-20T00:54:50",
+    "atualizado": "2026-11-20T00:54:50",
+    "resumo": "Esta é uma matéria de teste enviada para conferir se o robô transforma foto e texto do grupo da imprensa em notícia no site novo da A6 Produções. O título vem da primeira linha. A foto vira a capa. Os parágrafos seguinte",
+    "descricao": "Esta é uma matéria de teste enviada para conferir se o robô transforma foto e texto do grupo da imprensa em notícia no site novo da A6 Produções. O título vem",
+    "capa": "/assets/img/noticias/teste-materia-de-teste-do-robo-do-site-pode-capa.webp",
+    "capaAlt": "[TESTE] Matéria de teste do robô do site — pode apagar",
+    "categorias": [],
+    "autor": "Wallace Machado — Assessoria de Imprensa A6",
+    "html": "<p>Esta é uma matéria de teste enviada para conferir se o robô transforma foto e texto do grupo da imprensa em notícia no site novo da A6 Produções.</p>\n<p>O título vem da primeira linha. A foto vira a capa. Os parágrafos seguintes viram o corpo da matéria, com <strong>negrito</strong> preservado.</p>\n<p>Se você está lendo isto no site, o caminho WhatsApp → site funcionou de ponta a ponta.</p>",
+    "origem": "whatsapp",
+    "messageId": "TESTE1795146869735"
+  },
+  {
     "slug": "de-campanha-viral-a-show-confirmado-zeze-di-camargo-chega-a-cascavel-neste-sabado-apos-mobilizacao-dos-fas",
     "titulo": "De campanha viral a show confirmado: Zezé Di Camargo chega a Cascavel neste sábado após mobilização dos fãs",
     "data": "2026-10-20T17:58:53",
