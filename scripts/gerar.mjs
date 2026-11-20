@@ -21,7 +21,11 @@ const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'o
 const MESES_L = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 const diaMes = iso => { const [a, m, d] = iso.slice(0, 10).split('-'); return { d: +d, m: MESES[+m - 1], ml: MESES_L[+m - 1], a }; };
 const dataLonga = iso => { const x = diaMes(iso); return `${x.d} de ${x.ml} de ${x.a}`; };
+// link para o próprio domínio (ex.: /vivasuperia/, /superia-rock/) vira caminho relativo, sem UTM (UTM interno quebra a sessão no GA4)
+const interno = link => /^https?:\/\/(www\.)?a6producoes\.com\.br(\/|$)/i.test(link) || link.startsWith('/');
+const alvo = link => interno(link) ? '' : ' target="_blank" rel="noopener"';
 const comUtm = (link, campanha) => {
+  if (interno(link)) return link.replace(/^https?:\/\/(www\.)?a6producoes\.com\.br/i, '') || '/';
   const u = new URL(link);
   for (const k of [...u.searchParams.keys()]) if (k.startsWith('utm_')) u.searchParams.delete(k);
   u.searchParams.set('utm_source', 'site_a6'); u.searchParams.set('utm_medium', 'site'); u.searchParams.set('utm_campaign', campanha);
@@ -42,8 +46,8 @@ for (const e of historico) if (Date.parse(e.sai) <= AGORA) paginasShow.set(e.id,
 for (const e of eventos) paginasShow.set(e.id, e);
 
 const MENU = [
-  ['/', 'Home'], ['/programacao-e-ingressos/', 'Agenda'], ['/imprensa/', 'Notícias'],
-  ['/camarote-a6/', 'Camarote A6'], ['/sobre/', 'A empresa'], ['/contato/', 'Contato'],
+  ['/programacao-e-ingressos/', 'Agenda'], ['/vivasuperia/', 'Viva Superia'], ['/imprensa/', 'Notícias'],
+  ['/camarote-a6/', 'Camarote A6'], ['/leve-um-show-para-sua-cidade/', 'Para cidades'], ['/sobre/', 'A empresa'], ['/contato/', 'Contato'],
 ];
 
 // MEDIÇÃO — oficial: GA4 (tag do site atual) + pixel "Camarote A6" + kit rastreio-lp (funil no Supabase, view lp_funil).
@@ -134,7 +138,7 @@ function cardEvento(e) {
 <div class="corpo"><h3><a href="/eventos/${e.id}/" style="text-decoration:none">${esc(e.titulo)}</a></h3>
 ${e.subtitulo ? `<div>${esc(e.subtitulo)}</div>` : ''}
 <div class="onde">📍 ${esc(e.local)} · ${x.d} de ${x.ml}</div>
-<a class="bt peq" href="${esc(comUtm(e.link, e.id))}" target="_blank" rel="noopener" data-ingresso="${e.id}" data-lugar="card" data-rastreio-cta="ingresso ${e.id}">${esc(e.botao || 'Compre seu ingresso')}</a></div>
+<a class="bt peq" href="${esc(comUtm(e.link, e.id))}"${alvo(e.link)} data-ingresso="${e.id}" data-lugar="card" data-rastreio-cta="ingresso ${e.id}">${esc(e.botao || 'Compre seu ingresso')}</a></div>
 </article>`;
 }
 const blocoAgenda = () => `<div class="agenda" data-lista-agenda>${eventos.map(cardEvento).join('\n')}</div>
@@ -168,7 +172,7 @@ grava('/', layout({
   titulo: `${cfg.nome} — ${cfg.slogan}`, descricao: cfg.descricao, caminho: '/', jsonld: jsonldEventos(),
   corpo: `
 <section class="carrossel" aria-label="Destaques">
-<div class="trilho">${slides.map((e, i) => `<a class="slide" ${janela(e)} href="${esc(comUtm(e.link, e.id + '_banner'))}" target="_blank" rel="noopener" data-ingresso="${e.id}" data-lugar="banner" data-rastreio-cta="ingresso ${e.id}">
+<div class="trilho">${slides.map((e, i) => `<a class="slide" ${janela(e)} href="${esc(comUtm(e.link, e.id + '_banner'))}"${alvo(e.link)} data-ingresso="${e.id}" data-lugar="banner" data-rastreio-cta="ingresso ${e.id}">
 <img src="${e.banner}" alt="${esc(e.titulo)} — ${esc(e.cidade)}" width="1120" height="640" ${i ? 'loading="lazy"' : 'fetchpriority="high"'}>
 <span class="selo">${diaMes(e.data).d} de ${diaMes(e.data).ml} · ${esc(e.cidade)}</span></a>`).join('\n')}</div>
 <div class="setas"><button class="ant" aria-label="Anterior">‹</button><button class="prox" aria-label="Próximo">›</button></div>
@@ -177,7 +181,7 @@ grava('/', layout({
 <section class="faixa"><div class="cx">
 <h1>${esc(cfg.slogan)}</h1>
 <div class="botoes"><a class="bt" href="/programacao-e-ingressos/">Compre seu ingresso!</a>
-${botoes.map(b => `<a class="bt ${b.cor || ''}" ${janela(b)} href="${esc(comUtm(b.link, b.id))}" target="_blank" rel="noopener">${esc(b.texto)}</a>`).join('\n')}</div>
+${botoes.map(b => `<a class="bt ${b.cor || ''}" ${janela(b)} href="${esc(comUtm(b.link, b.id))}"${alvo(b.link)}>${esc(b.texto)}</a>`).join('\n')}</div>
 </div></section>
 <section class="secao"><div class="cx">
 <div class="titulo-sec"><h2>Agenda</h2><a class="ver-mais" href="/programacao-e-ingressos/">Ver agenda completa →</a></div>
@@ -206,7 +210,7 @@ grava('/programacao-e-ingressos/', layout({
   corpo: `<section class="cab-pag"><div class="cx"><h1>Agenda e ingressos</h1><p>Os próximos shows e eventos da A6. Compre sempre pelo link oficial.</p></div></section>
 <section class="secao"><div class="cx">${blocoAgenda()}
 <div class="caixa" style="margin-top:40px"><h3>Viva Superia</h3><p>Pacotes de viagem para os grandes shows, com hospedagem e experiência completa.</p>
-<a class="bt magenta" href="${comUtm('https://vivasuperia-site.vercel.app/', 'agenda_viva_superia')}" target="_blank" rel="noopener">Conhecer o Viva Superia</a></div>
+<a class="bt magenta" href="/vivasuperia/">Conhecer o Viva Superia</a></div>
 </div></section>`,
 }));
 
@@ -273,10 +277,61 @@ ${e.texto ? e.texto.split(/\n+/).map(p => `<p>${esc(p)}</p>`).join('') : `<p>${e
 </div>
 <aside class="caixa"><h3>${realizado ? 'Evento realizado' : 'Ingressos'}</h3>
 <p><b>Quando:</b> ${quando}<br><b>Onde:</b> ${esc(e.local)}</p>
-${realizado ? '<a class="bt roxo" href="/programacao-e-ingressos/">Ver próximos shows</a>' : `<a class="bt" href="${esc(comUtm(e.link, e.id + '_pagina'))}" target="_blank" rel="noopener" data-ingresso="${e.id}" data-lugar="pagina" data-rastreio-cta="ingresso ${e.id}">${esc(e.botao)}</a><p class="aviso-form" style="margin-top:12px">Compre só pelo link oficial.</p>`}
+${realizado ? '<a class="bt roxo" href="/programacao-e-ingressos/">Ver próximos shows</a>' : `<a class="bt" href="${esc(comUtm(e.link, e.id + '_pagina'))}"${alvo(e.link)} data-ingresso="${e.id}" data-lugar="pagina" data-rastreio-cta="ingresso ${e.id}">${esc(e.botao)}</a><p class="aviso-form" style="margin-top:12px">Compre só pelo link oficial.</p>`}
 <p style="margin-top:16px"><a href="${WA('evento')}" target="_blank" rel="noopener">Dúvidas? Fale no WhatsApp</a></p></aside></div>
 ${outros.length ? `<h2 style="margin-top:50px">Outros shows</h2><div class="agenda">${outros.map(cardEvento).join('')}</div>` : ''}
 </div></section>`,
+  }));
+}
+
+// LEVE UM SHOW PARA SUA CIDADE — prefeituras, organizadores de festas/exposições e patrocinadores
+// Tudo aqui sai de fatos já publicados no site (números de "A empresa" e matérias do Wallace). Não inventar cases.
+{
+  const casos = ['sociedade-rural-de-astorga-e-a6-producoes-anunciam-expoastorga-2026', 'a6-producoes-e-lg-producoes-recebem-homenagem-da-secretaria-de-turismo',
+    'hospital-da-crianca-de-maringa-recebe-doacao-recorde', 'maringa-tera-transmissao-historica-da-estreia-do-brasil-na-copa',
+    'de-campanha-viral-a-show-confirmado-zeze-di-camargo', 'a6-producoes-revolucionou-e-em-tempo-recorde-realocou']
+    .map(p => noticias.find(n => n.slug.startsWith(p))).filter(Boolean);
+  const artistas = ['Zezé Di Camargo & Luciano', 'Luan Santana', 'Henrique & Juliano', 'Jorge & Mateus', 'Leonardo', 'Bruno & Marrone', 'Thiaguinho', 'Belo', 'Turma do Pagode', 'Zé Ramalho', 'Ícaro & Gilmar', 'Humberto & Ronaldo', 'Fernando & Sorocaba', 'Humberto Gessinger']
+    .filter(a => noticias.some(n => (n.titulo + n.html).includes(a.split(' ')[0])));
+  grava('/leve-um-show-para-sua-cidade/', layout({
+    titulo: `Leve um grande show para sua cidade — ${cfg.nome}`,
+    descricao: 'Prefeituras, festas, exposições e patrocinadores: a A6 Produções planeja e realiza grandes shows no Sul do Brasil, do planejamento à execução.',
+    caminho: '/leve-um-show-para-sua-cidade/',
+    corpo: `<section class="cab-pag"><div class="cx"><h1>Leve um grande show para sua cidade</h1>
+<p>Prefeituras, festas de aniversário de cidade, exposições, rodeios e marcas: a A6 Produções cuida do evento do planejamento à execução.</p>
+<div class="botoes" style="margin-top:22px"><a class="bt" href="#proposta">Pedir uma proposta</a><a class="bt agua" href="${WA('cidades')}" target="_blank" rel="noopener">Falar no WhatsApp</a></div></div></section>
+<section class="secao"><div class="cx">
+<div class="numeros" style="margin-top:0"><div><b>+400</b>eventos realizados</div><div><b>+25</b>anos de experiência</div><div><b>Sul</b>do Brasil</div><div><b>Grandes</b>festivais</div></div>
+<div class="duas" style="margin-top:50px"><div class="texto">
+<h2 style="margin-top:0">Como funciona</h2>
+<p><b>1. Conversa.</b> Entendemos a cidade, a data, o público esperado e o objetivo do evento.</p>
+<p><b>2. Proposta.</b> Sugerimos artistas e formato que cabem no seu evento.</p>
+<p><b>3. Produção.</b> Do planejamento à execução, com foco em qualidade, organização e segurança do público.</p>
+<p><b>4. Divulgação.</b> Assessoria de imprensa própria e comunicação do evento.</p>
+</div>
+<aside class="caixa"><h3>Artistas que já estiveram em eventos da A6</h3><p>${artistas.map(esc).join(' · ')}</p>
+<h3 style="margin-top:20px">Cidades</h3><p>Maringá · Cascavel · Londrina · Astorga · Umuarama · Foz do Iguaçu · Iretama</p></aside></div>
+<h2 style="margin-top:50px">Na imprensa</h2>
+<div class="grade">${casos.map(n => cardNoticia(n)).join('')}</div>
+</div></section>
+<section class="secao cinza" id="proposta"><div class="cx duas">
+<div><h2 style="color:var(--magenta);text-transform:uppercase">Pedir uma proposta</h2><p>Conte o básico e nossa equipe comercial entra em contato.</p>
+<p>Prefere conversar agora? <a href="${WA('cidades_form')}" target="_blank" rel="noopener">Chame no WhatsApp (44) 3101-1045</a>.</p></div>
+<form class="contato" action="https://a6-site-robo.rafa-572.workers.dev/contato" method="post" data-contato>
+<input type="hidden" name="t" value=""><input type="hidden" name="pagina" value="/leve-um-show-para-sua-cidade/"><input type="hidden" name="origem" value="show-cidade-site">
+<label>Seu nome *<input name="nome" required autocomplete="name"></label>
+<label>Prefeitura, empresa ou evento *<input name="orgao" required placeholder="Ex.: Prefeitura de ..., Festa do ..."></label>
+<label>Cidade/UF *<input name="cidade" required placeholder="Ex.: Paranavaí/PR"></label>
+<label>E-mail *<input name="email" type="email" required autocomplete="email"></label>
+<label>WhatsApp *<input name="telefone" type="tel" required autocomplete="tel"></label>
+<label>Tipo de evento<select name="tipo"><option>Aniversário da cidade</option><option>Festa, exposição ou rodeio</option><option>Réveillon ou data comemorativa</option><option>Evento de empresa / patrocínio</option><option>Outro</option></select></label>
+<label>Data ou período desejado<input name="periodo" placeholder="Ex.: março de 2027"></label>
+<label>Público estimado<select name="publico"><option>Até 5 mil pessoas</option><option>5 a 15 mil</option><option>15 a 30 mil</option><option>Mais de 30 mil</option><option>Ainda não sei</option></select></label>
+<label>Algo mais? (artista desejado, orçamento, ideia)<textarea name="mensagem"></textarea></label>
+<input type="text" name="site" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
+<button class="bt" type="submit">Enviar pedido de proposta</button>
+<p class="aviso-form" data-status>Respondemos pelo e-mail ou WhatsApp informado.</p>
+</form></div></section>`,
   }));
 }
 
@@ -338,7 +393,7 @@ grava('/404.html', layout({
 // redirecionamentos dos endereços antigos que não existem mais (301)
 const REDIR = {
   '/eventos/': '/programacao-e-ingressos/', '/mesas/': '/programacao-e-ingressos/', '/mesas-e-lounges/': '/programacao-e-ingressos/',
-  '/precos/': '/contato/', '/servicos/': '/contato/', '/projetos/': '/sobre/', '/comercial/': '/contato/', '/artistas-e-projetos/': '/sobre/',
+  '/precos/': '/leve-um-show-para-sua-cidade/', '/servicos/': '/leve-um-show-para-sua-cidade/', '/projetos/': '/leve-um-show-para-sua-cidade/', '/comercial/': '/leve-um-show-para-sua-cidade/', '/artistas-e-projetos/': '/leve-um-show-para-sua-cidade/',
   '/home/': '/', '/category/destaque/': '/imprensa/', '/category/shows/': '/imprensa/', '/category/uncategorized/': '/imprensa/',
 };
 fs.writeFileSync(path.join(SITE, '_redirects'), Object.entries(REDIR).map(([de, para]) => `${de} ${para} 301\n${de.slice(0, -1)} ${para} 301`).join('\n') + '\n');
@@ -367,6 +422,7 @@ else if (fs.existsSync(path.join(SITE, '_headers'))) fs.rmSync(path.join(SITE, '
 
 fs.writeFileSync(path.join(SITE, 'robots.txt'), PREVIA ? 'User-agent: *\nDisallow: /\n' : `User-agent: *\nAllow: /\nSitemap: ${D}/sitemap.xml\n`);
 const hoje = new Date().toISOString().slice(0, 10);
+for (const esp of ['/vivasuperia/', '/superia-rock/']) if (fs.existsSync(path.join(SITE, esp, 'index.html')) && !paginas.includes(esp)) paginas.push(esp);
 fs.writeFileSync(path.join(SITE, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${paginas.map(p => { const n = noticias.find(x => `/${x.slug}/` === p); return `<url><loc>${D}${p}</loc><lastmod>${n ? n.atualizado.slice(0, 10) : hoje}</lastmod></url>`; }).join('\n')}

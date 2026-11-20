@@ -70,7 +70,7 @@
     try { if (window.gtag) gtag('event', nome, dados); } catch (e) {}
     try {
       if (window.fbq) {
-        if (nome === 'form_enviado') fbq('track', 'Lead', { content_name: 'contato-site' }, dados.eid ? { eventID: dados.eid } : undefined);
+        if (nome === 'form_enviado') fbq('track', 'Lead', { content_name: dados.content_name || 'contato-site' }, dados.eid ? { eventID: dados.eid } : undefined);
         else if (nome === 'clique_whatsapp') fbq('track', 'Contact', { content_name: dados.origem || '' });
         else fbq('trackCustom', nome, dados);
       }
@@ -107,7 +107,8 @@
           status.textContent = (j.ok ? '✅ ' : '⚠️ ') + j.msg;
           status.style.color = j.ok ? '#0a7a3d' : '#a7054b';
           if (j.ok) { form.reset(); form.t.value = Date.now(); }
-          if (j.ok && window.a6Evento) window.a6Evento('form_enviado', { formulario: 'contato', eid: eid });
+          var origem = form.origem ? form.origem.value : 'contato-site';
+          if (j.ok && window.a6Evento) window.a6Evento('form_enviado', { formulario: origem === 'show-cidade-site' ? 'proposta-show' : 'contato', content_name: origem, eid: eid });
         })
         .catch(function () { status.textContent = '⚠️ Não conseguimos enviar agora. Fale pelo WhatsApp (44) 3101-1045.'; })
         .then(function () { bt.disabled = false; bt.textContent = 'Enviar mensagem'; });

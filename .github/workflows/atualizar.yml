@@ -41,6 +41,9 @@ jobs:
       - name: Ler notícias novas do WhatsApp
         run: node scripts/noticias-whatsapp.mjs
         continue-on-error: true
+      - name: Espelhar Viva Superia e Superia Rock para dentro do domínio
+        run: node scripts/espelhar-superia.mjs --previa
+        continue-on-error: true
       - name: Gerar prévia
         run: node scripts/gerar.mjs --previa
       - name: Avisar linhas com problema na planilha
@@ -65,6 +68,7 @@ jobs:
           FTP_PASS: ${{ secrets.HOSTINGER_FTP_PASS }}
           FTP_DIR: ${{ vars.HOSTINGER_DIR || 'public_html' }}
         run: |
+          node scripts/espelhar-superia.mjs
           node scripts/gerar.mjs
           sudo apt-get install -y -qq lftp > /dev/null
           lftp -u "$FTP_USER","$FTP_PASS" "$FTP_HOST" -e "set ftp:ssl-allow yes; set ssl:verify-certificate no; mirror -R --only-newer --parallel=4 --exclude-glob _headers --exclude-glob _redirects site/ $FTP_DIR/; bye"

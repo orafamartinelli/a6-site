@@ -81,7 +81,7 @@ async function enviarCapi(env, req, d, f, oficial) {
   const corpo = {
     data: [{ event_name: 'Lead', event_time: Math.floor(Date.now() / 1000), event_id: limpa(f.get('eid'), 60) || undefined, action_source: 'website',
       event_source_url: limpa(f.get('url'), 300) || 'https://a6producoes.com.br/contato/', user_data,
-      custom_data: { content_name: 'contato-site', content_category: d.perfil } }],
+      custom_data: { content_name: d.origem, content_category: d.perfil } }],
     ...(oficial ? {} : { test_event_code: env.META_TEST_CODE || 'TEST_A6SITE' }),
   };
   const r = await fetch(`https://graph.facebook.com/v21.0/${env.META_PIXEL}/events?access_token=${env.META_CAPI_TOKEN}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) });
@@ -101,7 +101,15 @@ async function contato(req, env) {
   if (f.get('site')) return responder(true, 'ok'); // armadilha de robô: finge que deu certo
   const t = Number(f.get('t') || 0);
   if (t && Date.now() - t < 2500) return responder(true, 'ok'); // preenchido rápido demais = robô
-  const d = { nome: limpa(f.get('nome'), 80), email: limpa(f.get('email'), 120), telefone: limpa(f.get('telefone'), 30), perfil: limpa(f.get('perfil'), 60), mensagem: limpa(f.get('mensagem'), 2000), pagina: limpa(f.get('pagina'), 120) };
+  const origem = ['contato-site', 'show-cidade-site'].includes(f.get('origem')) ? f.get('origem') : 'contato-site';
+  const cidades = origem === 'show-cidade-site';
+  const d = { origem, nome: limpa(f.get('nome'), 80), email: limpa(f.get('email'), 120), telefone: limpa(f.get('telefone'), 30), perfil: limpa(f.get('perfil'), 60), mensagem: limpa(f.get('mensagem'), 2000), pagina: limpa(f.get('pagina'), 120),
+    orgao: limpa(f.get('orgao'), 120), cidade: limpa(f.get('cidade'), 80), tipo: limpa(f.get('tipo'), 60), periodo: limpa(f.get('periodo'), 80), publico: limpa(f.get('publico'), 40) };
+  if (cidades) {
+    d.perfil = `Proposta de show — ${d.tipo || 'evento'}`;
+    d.mensagem = [`Prefeitura/empresa/evento: ${d.orgao}`, `Cidade: ${d.cidade}`, `Tipo: ${d.tipo}`, `Período: ${d.periodo || '—'}`, `Público estimado: ${d.publico}`, d.mensagem ? `\n${d.mensagem}` : ''].join('\n').trim();
+    if (!d.orgao || !d.cidade) return responder(false, 'Informe a prefeitura/empresa e a cidade.', 400);
+  }
   if (!d.nome || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email) || d.telefone.replace(/\D/g, '').length < 10 || !d.mensagem) return responder(false, 'Confira nome, e-mail, telefone e mensagem.', 400);
   if (!(await limiteIp(req))) return responder(false, 'Muitos envios seguidos. Tente de novo mais tarde.', 429);
 
@@ -109,18 +117,18 @@ async function contato(req, env) {
   const pre = teste ? '[TESTE] ' : '';
   const foneLimpo = d.telefone.replace(/\D/g, '');
   const waLead = 'https://wa.me/' + (foneLimpo.length <= 11 ? '55' + foneLimpo : foneLimpo);
-  const textoWa = `${pre}📩 *Novo contato pelo site da A6*\n\n*Nome:* ${d.nome}\n*Perfil:* ${d.perfil}\n*WhatsApp:* ${d.telefone} (${waLead})\n*E-mail:* ${d.email}\n\n${d.mensagem}`;
+  const textoWa = `${pre}${cidades ? '🎤 *Pedido de proposta de show pelo site da A6*' : '📩 *Novo contato pelo site da A6*'}\n\n*Nome:* ${d.nome}\n*Perfil:* ${d.perfil}\n*WhatsApp:* ${d.telefone} (${waLead})\n*E-mail:* ${d.email}\n\n${d.mensagem}`;
   const resultados = await Promise.allSettled([
     fetch(`https://api.z-api.io/instances/${env.ZAPI_INSTANCE_ID}/token/${env.ZAPI_TOKEN}/send-text`, { method: 'POST', headers: { 'Client-Token': env.ZAPI_CLIENT_TOKEN, 'content-type': 'application/json' }, body: JSON.stringify({ phone: teste ? env.WA_TESTE : env.WA_A6, message: textoWa }) }).then(r => { if (!r.ok) throw new Error('zap ' + r.status); }),
     fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env.RESEND_KEY, 'content-type': 'application/json' }, body: JSON.stringify({
       from: 'Site A6 Produções <avisos@orafamartinelli.com.br>', to: [teste ? env.EMAIL_TESTE : env.EMAIL_A6], reply_to: d.email,
-      subject: `${pre}Contato pelo site: ${d.nome} (${d.perfil})`,
+      subject: cidades ? `${pre}Proposta de show: ${d.orgao} — ${d.cidade}` : `${pre}Contato pelo site: ${d.nome} (${d.perfil})`,
       html: `<div style="font-family:system-ui,sans-serif;font-size:15px"><h2 style="color:#321166">Novo contato pelo site</h2><p><b>Nome:</b> ${escHtml(d.nome)}<br><b>Perfil:</b> ${escHtml(d.perfil)}<br><b>WhatsApp:</b> <a href="${waLead}">${escHtml(d.telefone)}</a><br><b>E-mail:</b> ${escHtml(d.email)}</p><p style="white-space:pre-wrap;background:#f2f2f2;padding:14px;border-radius:10px">${escHtml(d.mensagem)}</p><p style="color:#777;font-size:12px">Enviado da página ${escHtml(d.pagina)}. Responda este e-mail para falar direto com a pessoa.</p></div>`,
     }) }).then(r => { if (!r.ok) throw new Error('email ' + r.status); }),
   ]);
   // Meta CAPI: Lead pelo servidor (mesmo event_id do navegador → a Meta deduplica). Fora do domínio oficial vai como TESTE.
-  const origem = req.headers.get('origin') || '';
-  const oficial = /^https:\/\/(www\.)?a6producoes\.com\.br$/.test(origem);
+  const origemHttp = req.headers.get('origin') || '';
+  const oficial = /^https:\/\/(www\.)?a6producoes\.com\.br$/.test(origemHttp);
   if (env.META_CAPI_TOKEN && env.META_PIXEL) {
     resultados.push(...await Promise.allSettled([enviarCapi(env, req, d, f, oficial).then(r => console.log('capi', r))]));
   }
