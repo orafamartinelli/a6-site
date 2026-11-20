@@ -394,6 +394,7 @@ grava('/404.html', layout({
 const REDIR = {
   '/eventos/': '/programacao-e-ingressos/', '/mesas/': '/programacao-e-ingressos/', '/mesas-e-lounges/': '/programacao-e-ingressos/',
   '/precos/': '/leve-um-show-para-sua-cidade/', '/servicos/': '/leve-um-show-para-sua-cidade/', '/projetos/': '/leve-um-show-para-sua-cidade/', '/comercial/': '/leve-um-show-para-sua-cidade/', '/artistas-e-projetos/': '/leve-um-show-para-sua-cidade/',
+  '/superia-rock/': '/vivasuperia/', '/eventos/superia-rock-humberto-gessinger-foz-do-iguacu/': '/programacao-e-ingressos/', // cancelado 20/11/2026
   '/home/': '/', '/category/destaque/': '/imprensa/', '/category/shows/': '/imprensa/', '/category/uncategorized/': '/imprensa/',
 };
 fs.writeFileSync(path.join(SITE, '_redirects'), Object.entries(REDIR).map(([de, para]) => `${de} ${para} 301\n${de.slice(0, -1)} ${para} 301`).join('\n') + '\n');
@@ -422,7 +423,7 @@ else if (fs.existsSync(path.join(SITE, '_headers'))) fs.rmSync(path.join(SITE, '
 
 fs.writeFileSync(path.join(SITE, 'robots.txt'), PREVIA ? 'User-agent: *\nDisallow: /\n' : `User-agent: *\nAllow: /\nSitemap: ${D}/sitemap.xml\n`);
 const hoje = new Date().toISOString().slice(0, 10);
-for (const esp of ['/vivasuperia/', '/superia-rock/']) if (fs.existsSync(path.join(SITE, esp, 'index.html')) && !paginas.includes(esp)) paginas.push(esp);
+for (const esp of ['/vivasuperia/']) if (fs.existsSync(path.join(SITE, esp, 'index.html')) && !paginas.includes(esp)) paginas.push(esp);
 fs.writeFileSync(path.join(SITE, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${paginas.map(p => { const n = noticias.find(x => `/${x.slug}/` === p); return `<url><loc>${D}${p}</loc><lastmod>${n ? n.atualizado.slice(0, 10) : hoje}</lastmod></url>`; }).join('\n')}

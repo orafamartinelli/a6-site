@@ -10,7 +10,7 @@ const RAIZ = path.resolve(import.meta.dirname, '..');
 const DOMINIO = 'https://a6producoes.com.br';
 const ESPELHOS = [
   { pagina: 'https://vivasuperia-site.vercel.app/', base: 'https://vivasuperia-site.vercel.app/', destino: 'vivasuperia' },
-  { pagina: 'https://superia-gessinger.vercel.app/imersiva', base: 'https://superia-gessinger.vercel.app/', destino: 'superia-rock' },
+  // Superia Rock (imersiva) CANCELADO pelo Rafa em 20/11/2026 — espelho removido; /superia-rock/ → 301 /vivasuperia/
 ];
 // links entre os sites passam a apontar para dentro do domínio da A6
 const TROCAS = [

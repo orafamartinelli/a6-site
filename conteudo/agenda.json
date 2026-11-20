@@ -34,23 +34,6 @@
       "carrossel": true,
       "noAr": true,
       "texto": ""
-    },
-    {
-      "id": "superia-rock-humberto-gessinger-foz-do-iguacu",
-      "titulo": "Superia Rock — Humberto Gessinger",
-      "subtitulo": "",
-      "cidade": "Foz do Iguaçu/PR",
-      "local": "Wish Foz do Iguaçu",
-      "data": "2026-12-11",
-      "horario": "",
-      "link": "https://a6producoes.com.br/superia-rock/",
-      "botao": "Compre seu ingresso",
-      "banner": "/assets/img/eventos/superia-rock-humberto-gessinger-foz-do-iguacu-3bd33be5.webp",
-      "entra": "2026-11-01T00:00:00-03:00",
-      "sai": "2026-12-12T09:00:00.000Z",
-      "carrossel": true,
-      "noAr": true,
-      "texto": ""
     }
   ],
   "botoes": [
