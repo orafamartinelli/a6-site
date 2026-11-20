@@ -38,10 +38,16 @@ Só na versão oficial (`node scripts/gerar.mjs` sem `--previa`): GA4 `GT-NC6TWL
 - Formulário OFICIAL (`MODO_TESTE = "0"`, teste validado pelo Rafa).
 - Pasta "Agenda do site A6" compartilhada com bianca.gimenes@a6producoes.com.br (editora).
 
-## Pendente — Hostinger (acesso do Wallace, segunda 23/11)
-1. Backup completo do WordPress atual (arquivos + banco) ANTES de tudo.
-2. Segredos `HOSTINGER_FTP_HOST/USER/PASS` (+ variável `HOSTINGER_DIR` se não for public_html).
-3. Tirar o WordPress do public_html (o espelho FTP não apaga arquivos antigos; `index.php` do WP venceria o `index.html`).
-4. `gh variable set HOSTINGER_ATIVO -R orafamartinelli/a6-site --body 1` e rodar `gh workflow run atualizar.yml -f motivo=oficial`.
+## Hostinger — preparado em 20/11/2026 (Homer), troca fica para fazer COM o Wallace
+- Acesso: hPanel do Rafa → "Compartilhados com você" → a6producoes.com.br (dono dupoiares@a6producoes.com.br, plano Cloud Startup). Base `/home/u926519350/domains/a6producoes.com.br`.
+- ✅ FTP do robô: `u926519350.robositenovo`, presa à pasta `/site-novo` (FORA do public_html → não aparece na internet, não enxerga o WordPress). Host = IP `76.13.89.220` (o `ftp.a6producoes.com.br` NÃO resolve: o DNS da A6 não está na Hostinger — NÃO mexer no DNS, os e-mails são Google Workspace, MX smtp.google.com). Senha no cofre do OpenBot (Homer) `HOSTINGER_FTP_PASS_A6`.
+- ✅ Segredos `HOSTINGER_FTP_HOST/USER/PASS` + variável `HOSTINGER_DIR=.` + `HOSTINGER_ATIVO=1`: todo `atualizar` espelha a versão OFICIAL (indexável, com medição) em `/site-novo`. 1ª publicação 20/11 11h22: 57 páginas, conferido por FTP; WordPress segue no ar.
+- Backup: Hostinger tem backup completo de 20/11 10h31 + automático diário. Download só por e-mail ao dono (não pedido).
+
+### Troca (dia combinado com o Wallace) — NÃO fazer sozinho
+1. Backup MANUAL na hora (hPanel → Backups → criar; 1 a cada 24 h).
+2. No Gerenciador de arquivos: renomear `public_html` → `public_html-wordpress` e `site-novo` → `public_html` (ou mover o conteúdo). O FTP do robô está preso a `/site-novo`: depois da troca, editar a conta FTP para o diretório `/public_html` (ou recriar).
+3. `gh workflow run atualizar.yml -R orafamartinelli/a6-site -f motivo=oficial`. Volta atrás = renomear de volta.
+4. NÃO tocar em DNS/MX/registros do e-mail.
 5. Conferir páginas com barra final, 301 do `.htaccess`, GA4/pixel disparando (Test Events da Meta), Search Console (reenviar sitemap).
 6. Depois que `clique_ingresso` aparecer no pixel 729649615336498: pedir ao Gestor a conversão "Clique ingresso – Site A6" (categoria Outro). A API recusou antes (erro 100/1760020) porque o pixel nunca recebeu o evento; se recusar de novo, criar à mão no Gerenciador de Eventos. Já existe "Lead – Site A6" (id 2409271213142281, Lead + content_name contém "-site").
