@@ -28,6 +28,12 @@ Só na versão oficial (`node scripts/gerar.mjs` sem `--previa`): GA4 `GT-NC6TWL
 ## Scripts
 `gerar.mjs [--previa]` · `importar.mjs` (reimporta do WP) · `fotos.mjs` (celular/PC, NODE_PATH com playwright) · `publicar-previa.mjs` · `criar-planilha.mjs` / `reestruturar-planilha.mjs` (já rodados) · `teste-celula.mjs` / `teste-noticia.mjs` (testes) · `zapi-grupos.mjs` (só leitura).
 
+## Espelhos Viva Superia / Superia Rock (20/11/2026)
+`scripts/espelhar-superia.mjs` copia `vivasuperia-site.vercel.app` → `/vivasuperia/` e `superia-gessinger.vercel.app/imersiva` → `/superia-rock/` (roda em toda rodada do robô; canonical no domínio da A6; links entre eles reescritos; Vercel Analytics desligado). Motivo: anúncio direto na página final, SEM redirecionamento (redirecionamento derrubava o "acesso à página" da Meta). Os originais continuam sendo editados nos repos superia-site / superia-gessinger — o espelho só copia. Conferência: `scripts/conferir-espelho.mjs`.
+
+## Página para cidades
+`/leve-um-show-para-sua-cidade/` (prefeituras, festas, exposições, patrocinadores). Conteúdo só com fatos do próprio site (números de "A empresa", artistas/cidades das matérias, 6 matérias como casos). Formulário → mesmo `/contato` do vigia com `origem=show-cidade-site` (assunto "Proposta de show", Lead com content_name `show-cidade-site`). /comercial/, /artistas-e-projetos/, /precos/, /servicos/, /projetos/ → 301 para ela.
+
 ## Feito em 20/11/2026
 - Formulário OFICIAL (`MODO_TESTE = "0"`, teste validado pelo Rafa).
 - Pasta "Agenda do site A6" compartilhada com bianca.gimenes@a6producoes.com.br (editora).
