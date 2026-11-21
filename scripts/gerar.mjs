@@ -52,7 +52,7 @@ const MENU = [
 
 // MEDIÇÃO — oficial: GA4 (tag do site atual) + pixel "Camarote A6" + kit rastreio-lp (funil no Supabase, view lp_funil).
 // Prévia: nada mede, exceto com ?rastreio_teste=1 (só o kit, gravando como site "a6-site-teste").
-const GA4 = 'GT-NC6TWLTK';
+const GA4 = 'G-RB7JHJNKMY'; // propriedade GA4 da A6 (Rafa, 20/11/2026). Antes: GT-NC6TWLTK (tag do Site Kit do WP que repassava para cá). Uma tag só para não contar em dobro.
 const PIXEL = '729649615336498';
 function medicao() {
   if (PREVIA) return `<script>if(/[?&]rastreio_teste=1/.test(location.search)){var s=document.createElement('script');s.src='/assets/js/rastreio-lp.js?v=${VERSAO}';s.dataset.site='a6-site';s.dataset.vercelBase='off';document.head.appendChild(s)}</script>`;

@@ -23,7 +23,7 @@ Wallace no grupo ─> raro-zapi-router (bloco A6, aditivo) ─> a6-site-robo /no
 POST no `a6-site-robo/contato` → WhatsApp + e-mail (Resend, remetente avisos@orafamartinelli.com.br, reply-to = quem preencheu). **`MODO_TESTE = "1"`** no `robo/wrangler.toml` = vai pro Rafa com [TESTE]; trocar para "0" depois do OK do Rafa → WhatsApp (44) 3101-1045 + contato@a6producoes.com.br. Armadilha anti-robô (campo oculto + tempo mínimo) e limite de 5 envios/hora por IP.
 
 ## Medição
-Só na versão oficial (`node scripts/gerar.mjs` sem `--previa`): GA4 `GT-NC6TWLTK` (tag do site atual), pixel "Camarote A6" `729649615336498` (Lead no formulário, Contact no WhatsApp, `clique_ingresso` custom) e kit rastreio-lp (`a6-site`, view `lp_funil`). Prévia: só com `?rastreio_teste=1` (grava como `a6-site-teste`).
+Só na versão oficial (`node scripts/gerar.mjs` sem `--previa`): GA4 `G-RB7JHJNKMY` (propriedade da A6, direto; desde 20/11/2026 — antes usava a tag `GT-NC6TWLTK` do WP, que repassava para ela), pixel "Camarote A6" `729649615336498` (Lead no formulário, Contact no WhatsApp, `clique_ingresso` custom) e kit rastreio-lp (`a6-site`, view `lp_funil`). Prévia: só com `?rastreio_teste=1` (grava como `a6-site-teste`).
 
 ## Scripts
 `gerar.mjs [--previa]` · `importar.mjs` (reimporta do WP) · `fotos.mjs` (celular/PC, NODE_PATH com playwright) · `publicar-previa.mjs` · `criar-planilha.mjs` / `reestruturar-planilha.mjs` (já rodados) · `teste-celula.mjs` / `teste-noticia.mjs` (testes) · `zapi-grupos.mjs` (só leitura).
