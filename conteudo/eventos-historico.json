@@ -15,7 +15,7 @@
     "carrossel": true,
     "noAr": true,
     "texto": "",
-    "vistoEm": "2026-11-21T04:26:40.469Z"
+    "vistoEm": "2026-11-21T05:52:38.549Z"
   },
   "sunset-experience-zeze-di-camargo-e-luciano-maringa": {
     "id": "sunset-experience-zeze-di-camargo-e-luciano-maringa",
@@ -33,7 +33,7 @@
     "carrossel": true,
     "noAr": true,
     "texto": "",
-    "vistoEm": "2026-11-21T04:26:40.469Z"
+    "vistoEm": "2026-11-21T05:52:38.549Z"
   },
   "ce-ta-doido-maringa": {
     "id": "ce-ta-doido-maringa",
@@ -51,6 +51,24 @@
     "carrossel": true,
     "noAr": true,
     "texto": "",
-    "vistoEm": "2026-11-21T04:26:40.469Z"
+    "vistoEm": "2026-11-21T05:52:38.549Z"
+  },
+  "em-breve-superia-jurema-aguas-quentes-iretama": {
+    "id": "em-breve-superia-jurema-aguas-quentes-iretama",
+    "titulo": "Em breve: Superia Jurema Águas Quentes",
+    "subtitulo": "",
+    "cidade": "Iretama/PR",
+    "local": "Jurema Águas Quentes, Iretama/PR",
+    "data": "2027-03-05",
+    "horario": "",
+    "link": "https://orafamartinelli.com.br/vivasuperia/grupo",
+    "botao": "Compre seu ingresso",
+    "banner": "/assets/img/eventos/em-breve-superia-jurema-aguas-quentes-iretama-a4e64c86.webp",
+    "entra": "2026-11-21T00:00:00-03:00",
+    "sai": "2027-03-06T09:00:00.000Z",
+    "carrossel": true,
+    "noAr": true,
+    "texto": "",
+    "vistoEm": "2026-11-21T05:52:38.549Z"
   }
 }
