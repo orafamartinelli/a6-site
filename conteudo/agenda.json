@@ -34,6 +34,23 @@
       "carrossel": true,
       "noAr": true,
       "texto": ""
+    },
+    {
+      "id": "ce-ta-doido-maringa",
+      "titulo": "Cê Tá Doido",
+      "subtitulo": "",
+      "cidade": "Maringá/PR",
+      "local": "Maringá/PR",
+      "data": "2027-02-27",
+      "horario": "",
+      "link": "https://www.vaideingresso.com.br/ce-ta-doido-maringa",
+      "botao": "Compre seu ingresso",
+      "banner": "/assets/img/eventos/ce-ta-doido-maringa-96d9794b.webp",
+      "entra": "2026-11-21T00:00:00-03:00",
+      "sai": "2027-02-28T09:00:00.000Z",
+      "carrossel": true,
+      "noAr": true,
+      "texto": ""
     }
   ],
   "botoes": [
